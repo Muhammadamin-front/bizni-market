@@ -1,0 +1,53 @@
+[Unit]
+Description=Bizni Market web (site, Mini App, admin) on 127.0.0.1, behind Cloudflare Tunnel
+After=network-online.target biznimarket-api.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=biznimarket
+Group=biznimarket
+WorkingDirectory=/srv/biznimarket/app/web
+EnvironmentFile=/etc/biznimarket/app.env
+Environment=NODE_ENV=production
+Environment=NEXT_TELEMETRY_DISABLED=1
+# The Cloudflare Tunnel ingress rule points at this address. Loopback only.
+Environment=HOSTNAME=127.0.0.1
+Environment=PORT=4100
+ExecStart=/srv/biznimarket/app/bin/node apps/web/server.js
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=20
+MemoryMax=512M
+TasksMax=256
+UMask=0027
+
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+# The release (including .next) is read-only; revalidated pages are kept in memory (see build-release.sh).
+ReadWritePaths=/srv/biznimarket/data
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+RemoveIPC=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged
+SystemCallErrorNumber=EPERM
+
+[Install]
+WantedBy=multi-user.target

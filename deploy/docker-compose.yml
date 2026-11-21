@@ -1,0 +1,117 @@
+# Test/production stack. Build: `docker compose --env-file deploy/.env -f deploy/docker-compose.yml up -d --build`
+# Profiles (COMPOSE_PROFILES in deploy/.env):
+#   demo    - synthetic MoySklad (apps/mock-moysklad) instead of the real one. Remove it when MOYSKLAD_TOKEN is real.
+#   tunnel  - Cloudflare quick tunnel: a free public https URL with no domain (changes on restart; for demos only).
+#   caddy   - automatic HTTPS for a real DOMAIN (use this once the domain exists).
+name: shop
+
+x-app-env: &app-env
+  NODE_ENV: production
+  DATABASE_URL: postgres://shop:${POSTGRES_PASSWORD}@postgres:5432/shop
+  REDIS_URL: redis://redis:6379
+  MOYSKLAD_BASE_URL: ${MOYSKLAD_BASE_URL}
+  MOYSKLAD_TOKEN: ${MOYSKLAD_TOKEN}
+  MOYSKLAD_REQUEST_WEIGHT: ${MOYSKLAD_REQUEST_WEIGHT:-4}
+  MOYSKLAD_WEBHOOK_SECRET: ${MOYSKLAD_WEBHOOK_SECRET}
+  MOYSKLAD_WEBHOOK_BASE_URL: ${MOYSKLAD_WEBHOOK_BASE_URL:-}
+  TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+  TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-}
+  TELEGRAM_WEBHOOK_SECRET: ${TELEGRAM_WEBHOOK_SECRET}
+  PUBLIC_URL: ${PUBLIC_URL}
+  SESSION_SECRET: ${SESSION_SECRET}
+  MEDIA_DIR: /data/media
+  ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+  ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+  TURNSTILE_SECRET: ${TURNSTILE_SECRET:-}
+  TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
+  TMA_DEV_MODE: ${TMA_DEV_MODE:-false}
+  # Behind the Cloudflare tunnel: rate limits use the visitor address Cloudflare sets (see packages/core/src/env.ts).
+  CLIENT_IP_HEADER: ${CLIENT_IP_HEADER:-}
+  WEB_REVALIDATE_URL: http://web:3000/hooks/revalidate
+  REVALIDATE_SECRET: ${REVALIDATE_SECRET}
+  SYNC_ON_BOOT: "true"
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: shop
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: shop
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shop -d shop"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    # BullMQ needs noeviction (an evicted job key would silently lose work) and persistence for queued orders.
+    command: ["redis-server", "--maxmemory-policy", "noeviction", "--appendonly", "yes", "--maxmemory", "256mb"]
+    volumes: [redisdata:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build: { context: .., dockerfile: deploy/Dockerfile, target: api }
+    restart: unless-stopped
+    environment: *app-env
+    volumes: [media:/data/media]
+    depends_on: { postgres: { condition: service_healthy }, redis: { condition: service_healthy } }
+
+  worker:
+    build: { context: .., dockerfile: deploy/Dockerfile, target: worker }
+    restart: unless-stopped
+    environment: *app-env
+    volumes: [media:/data/media]
+    depends_on: { postgres: { condition: service_healthy }, redis: { condition: service_healthy } }
+
+  web:
+    build: { context: .., dockerfile: deploy/Dockerfile, target: web, args: { API_INTERNAL_URL: "http://api:4000" } }
+    restart: unless-stopped
+    environment:
+      PUBLIC_URL: ${PUBLIC_URL}
+      API_INTERNAL_URL: http://api:4000
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET}
+    depends_on: [api]
+    ports: ["${WEB_PORT:-3000}:3000"]
+
+  mock-moysklad:
+    profiles: [demo]
+    build: { context: .., dockerfile: deploy/Dockerfile, target: mock }
+    restart: unless-stopped
+    environment:
+      PORT: "4010"
+      MOCK_PUBLIC_URL: http://mock-moysklad:4010
+      MOCK_MOYSKLAD_TOKEN: ${MOYSKLAD_TOKEN}
+    ports: ["127.0.0.1:4010:4010"] # control page for the demo: change a price / a stock / an order status "in MoySklad"
+
+  cloudflared:
+    profiles: [tunnel]
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate --url http://web:3000
+    depends_on: [web]
+
+  caddy:
+    profiles: [caddy]
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment: { DOMAIN: "${DOMAIN:-localhost}" }
+    volumes: [./Caddyfile:/etc/caddy/Caddyfile:ro, caddydata:/data, caddyconfig:/config]
+    depends_on: [web]
+
+volumes:
+  pgdata:
+  redisdata:
+  media:
+  caddydata:
+  caddyconfig:

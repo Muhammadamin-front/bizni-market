@@ -1,0 +1,49 @@
+[Unit]
+Description=Bizni Market API (127.0.0.1 only)
+After=network-online.target postgresql.service redis-server.service
+Wants=network-online.target postgresql.service redis-server.service
+
+[Service]
+Type=simple
+User=biznimarket
+Group=biznimarket
+WorkingDirectory=/srv/biznimarket/app/api
+EnvironmentFile=/etc/biznimarket/app.env
+Environment=NODE_ENV=production
+ExecStart=/srv/biznimarket/app/bin/node dist/main.js
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=20
+MemoryMax=768M
+TasksMax=256
+UMask=0027
+
+# Sandbox: read-only system, writes only to the data folder, no privileges.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ReadWritePaths=/srv/biznimarket/data
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectProc=invisible
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+RemoveIPC=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged
+SystemCallErrorNumber=EPERM
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily Bizni Market backup
+
+[Timer]
+# 03:40, after the CRM's own nightly backup window.
+OnCalendar=*-*-* 03:40:00
+RandomizedDelaySec=10m
+Persistent=true
+
+[Install]
+WantedBy=timers.target

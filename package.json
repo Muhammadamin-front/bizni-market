@@ -1,0 +1,37 @@
+{
+  "name": "shop",
+  "private": true,
+  "packageManager": "pnpm@10.34.9",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @shop/mock-moysklad --filter @shop/api --filter @shop/worker --filter @shop/web dev",
+    "build": "pnpm -r --if-present build",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "lint": "eslint .",
+    "test": "pnpm -r --if-present test",
+    "format": "prettier --write .",
+    "check": "pnpm typecheck && pnpm lint && pnpm test",
+    "dev:web": "pnpm --filter @shop/web dev",
+    "stores:up": "docker compose -f docker-compose.dev.yml up -d",
+    "stores:down": "docker compose -f docker-compose.dev.yml down",
+    "db:generate": "pnpm --filter @shop/db generate",
+    "db:migrate": "pnpm --filter @shop/db migrate",
+    "probe": "pnpm --filter @shop/moysklad exec tsx --env-file-if-exists=../../.env src/probe.ts",
+    "telegram:setup": "tsx --env-file-if-exists=.env scripts/telegram-setup.ts",
+    "admin:create": "pnpm --filter @shop/api exec tsx --env-file-if-exists=../../.env src/admin-cli.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.5",
+    "@types/node": "24.10.1",
+    "axe-core": "4.14.0",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.4.5",
+    "prettier": "3.9.10",
+    "puppeteer-core": "25.16.0",
+    "typescript": "5.9.3",
+    "tsx": "4.23.15",
+    "@shop/core": "workspace:*"
+  }
+}

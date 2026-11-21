@@ -1,0 +1,5 @@
+# Automatic HTTPS for the real domain. Set DOMAIN in deploy/.env and enable the `caddy` profile.
+{$DOMAIN} {
+	encode zstd gzip
+	reverse_proxy web:3000
+}

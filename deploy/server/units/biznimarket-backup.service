@@ -1,0 +1,14 @@
+[Unit]
+Description=Bizni Market backup (database dump + photo folder)
+After=postgresql.service
+
+[Service]
+Type=oneshot
+ExecStart=/srv/biznimarket/bin/backup.sh
+Nice=10
+IOSchedulingClass=idle
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ReadWritePaths=/srv/biznimarket/backups

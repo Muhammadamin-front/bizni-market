@@ -1,0 +1,24 @@
+node_modules/
+.next/
+dist/
+coverage/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+.DS_Store
+.turbo/
+# Impeccable: keep surface briefs and design records, drop review scratch
+.impeccable/review/
+.impeccable/mocks/
+.impeccable/build/
+.impeccable/live/
+.impeccable/config.local.json
+scripts/out/
+.impeccable/questions/
+.impeccable/hook.cache.json
+
+data/
+
+apps/web/AGENTS.md
+deploy/server/out/

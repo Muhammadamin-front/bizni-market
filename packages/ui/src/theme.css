@@ -1,0 +1,134 @@
+/*
+ * Design tokens: "Warm Consumer App" (see DESIGN.md / surface brief).
+ * One rule runs through everything: the saturated colour (--color-action) appears ONLY on things you can press.
+ * Brand name, logo and the final accent are undecided, so the accent is a single token to swap.
+ * Loaded after `@import "tailwindcss"` by each app; Tailwind turns these into utilities (bg-ground, text-ink, rounded-card...).
+ */
+@theme {
+  /* Surfaces */
+  --color-ground: #f6f3ee;
+  --color-card: #ffffff;
+  --color-sunken: #efeae2;
+  --color-line: #e8e3da;
+  --color-line-strong: #d6cfc2;
+
+  /* Text. Ink on ground is 15:1, secondary on ground is 5.1:1. */
+  --color-ink: #1b1b1f;
+  --color-ink-2: #6b6760;
+
+  /* The one action colour. White on it is 5.2:1. */
+  --color-action: #2f5bff;
+  --color-action-press: #2447d6;
+
+  /* Disabled controls lose the action colour entirely. */
+  --color-off: #e4e0d8;
+  --color-off-ink: #8a857b;
+
+  /* Stock status (text colours are AA on white and on ground). */
+  --color-ok: #1f7a4d;
+  --color-warn: #a8480a;
+  --color-out: #6b6760;
+
+  /* Promo flash on offers (used sparingly; never on pressables). */
+  --color-promo: #b3261e;
+
+  /* Shape: 10 px cards, 8 px controls. Hairlines instead of shadows. */
+  --radius-card: 10px;
+  --radius-control: 8px;
+
+  /* Type */
+  --font-sans: var(--font-onest), "Onest", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* Article codes only: the platform monospace, no extra font download. */
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Roboto Mono", monospace;
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1.25;
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.35;
+  --text-body: 1rem;
+  --text-body--line-height: 1.5;
+  --text-lead: 1.25rem;
+  --text-lead--line-height: 1.3;
+  --text-title: 1.75rem;
+  --text-title--line-height: 1.15;
+
+  /* Motion: state feedback only. */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-sheet: sheet-in 220ms var(--ease-out-expo);
+  --animate-toast: toast-in 200ms var(--ease-out-expo);
+
+  @keyframes sheet-in {
+    from {
+      transform: translateY(24px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  @keyframes toast-in {
+    from {
+      transform: translateY(8px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+}
+
+@layer base {
+  html {
+    background: var(--color-ground);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    /* Browser surfaces carry the design too. */
+    accent-color: var(--color-action);
+    caret-color: var(--color-action);
+    scrollbar-color: var(--color-line-strong) transparent;
+    scrollbar-width: thin;
+  }
+  body {
+    margin: 0;
+    font-size: var(--text-body);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection {
+    background: #d5deff;
+    color: var(--color-ink);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-action);
+    outline-offset: 2px;
+  }
+  /* Figures that line up: prices, counts, articles. */
+  .tnum {
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  /* Inputs: no iOS zoom on focus, themed placeholder. */
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+  input::placeholder {
+    color: var(--color-ink-2);
+    opacity: 1;
+  }
+  input[type="search"]::-webkit-search-cancel-button {
+    appearance: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

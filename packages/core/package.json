@@ -1,0 +1,31 @@
+{
+  "name": "@shop/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@shop/db": "workspace:*",
+    "@shop/moysklad": "workspace:*",
+    "@shop/shared": "workspace:*",
+    "bullmq": "6.7.2",
+    "ioredis": "6.0.0",
+    "pino": "10.4.0",
+    "sharp": "0.35.5",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@shop/mock-moysklad": "workspace:*",
+    "@types/node": "24.10.1",
+    "typescript": "5.9.3",
+    "vitest": "5.1.0",
+    "pg": "8.23.1",
+    "@types/pg": "8.23.1"
+  }
+}
