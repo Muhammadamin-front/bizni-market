@@ -50,15 +50,19 @@ export function Footer({ locale, content, botUsername }: { locale: Locale; conte
           </div>
         ) : null}
       </div>
-      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 border-t border-line px-4 py-4 text-caption text-ink-2">
-        <p>{m.footer.rights(m.brand.name)}</p>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-4 py-4 lg:px-6">
+        <p className="text-caption text-ink-2">{m.footer.rights(m.brand.name)}</p>
         {/* /admin has its own login and is not localized; no prefetch so visitors never load admin code. */}
         <Link
           href="/admin"
           prefetch={false}
           rel="nofollow"
-          className="inline-flex min-h-[44px] items-center rounded-md px-3 font-semibold text-ink-2 hover:bg-line/40 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-action"
+          className="inline-flex min-h-[44px] items-center gap-2 rounded-md border border-line-strong bg-card px-4 text-small font-semibold text-ink hover:border-ink/50 hover:bg-ink/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action"
         >
+          <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="4" y="11" width="16" height="10" rx="2" />
+            <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+          </svg>
           {m.footer.admin}
         </Link>
       </div>
