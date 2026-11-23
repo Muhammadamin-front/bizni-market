@@ -24,6 +24,17 @@ The shop was first built as "Bizni Market"; internal names (`biznimarket` user/s
     ProxyCommand nc $(~/path/to/find-office-server.sh) %p
   ```
   The new computer's SSH public key must be added to `~vocora/.ssh/authorized_keys` on the server first (from a computer that has access).
+- **Windows** (the script and the `ProxyCommand` above are macOS-only; run deploy scripts in **Git Bash**, not PowerShell):
+  key: `ssh-keygen -t ed25519` in PowerShell, then the owner sends the one line of `%USERPROFILE%\.ssh\id_ed25519.pub`
+  to someone with access. `%USERPROFILE%\.ssh\config`:
+  ```
+  Host crm-server
+    HostName 192.168.1.18
+    User vocora
+    HostKeyAlias crm-server
+  ```
+  If the IP changed: `arp -a | grep -i f4-b5-20-56-35-ef` (Git Bash; if empty, `ping -n 1` the 192.168.1.x range first), put the new
+  IP in `HostName`, tell the owner. `.gitattributes` keeps LF endings so the scripts still run on the Linux server.
 - At home another device answers on 192.168.1.x (port 22 refused): do not retry, tell the owner.
 
 ## Rules on the shared server (from its owner)
