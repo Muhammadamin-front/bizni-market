@@ -1,7 +1,7 @@
 # Kanso — kompyuterlar, kompyuter xizmatlari va kanselyariya: sayt + Telegram Mini App (+ ixtiyoriy MoySklad)
 
 MoySklad'dagi tovarlar (narx, qoldiq, rasm) sayt va Telegram Mini App'da ko'rinadi; buyurtmalar MoySklad'ga `customerorder` bo'lib tushadi. Statuslar MoySklad'da.
-Arxitektura: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · MoySklad API faktlari: [docs/moysklad-api-notes.md](docs/moysklad-api-notes.md) · **holat va qolgan ishlar: [docs/STATUS.md](docs/STATUS.md)** · joylash: [docs/DEPLOY.md](docs/DEPLOY.md)
+**Jonli holat, server va deploy: [CLAUDE.md](CLAUDE.md)** · Arxitektura: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · MoySklad API faktlari: [docs/moysklad-api-notes.md](docs/moysklad-api-notes.md) · **holat va qolgan ishlar: [docs/STATUS.md](docs/STATUS.md)** · joylash: [docs/DEPLOY.md](docs/DEPLOY.md)
 
 ## Faqat uchta narsa kerak (kod o'zgarmaydi, faqat sozlama)
 | # | Nima | Qayerga |
