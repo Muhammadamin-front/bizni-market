@@ -12,7 +12,7 @@ import {
 import { HEX_COLOR, HOME_SECTIONS, IntegrationSettingsSchema, LOCAL_ORDER_STATUSES, ManualCategoryInput, ManualProductInput, normalizeSearch, ProductQuickEdit } from "@shop/shared";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { ADMIN_COOKIE, allow, requireAdmin } from "../guards";
+import { ADMIN_COOKIE, overLimit, recordHit, requireAdmin } from "../guards";
 
 const Page = z.object({ page: z.coerce.number().int().min(1).default(1), pageSize: z.coerce.number().int().min(1).max(100).default(30) });
 const RUNNABLE = ["full", "products", "stock", "folders", "images", "reconcile", "webhook-health", "order-states"] as const;
@@ -24,8 +24,11 @@ export function adminRoutes(app: FastifyInstance, rt: Runtime) {
   // ------------------------------------------------------------------------------------------ session
   app.post("/v1/admin/login", async (req, reply) => {
     const body = z.object({ email: z.string().max(200), password: z.string().max(200), totp: z.string().max(10).optional() }).parse(req.body);
-    // CSRF for login is covered by SameSite + a JSON body, but cap brute force per IP and per account name.
-    if (!(await allow(rt, `adminlogin:ip:${req.clientIp}`, 20, 900)) || !(await allow(rt, `adminlogin:acct:${body.email.toLowerCase()}`, 10, 900))) {
+    // CSRF for login is covered by SameSite + a JSON body. Brute force is capped per IP and per account name, counting only WRONG
+    // passwords / codes: a correct login, and the first step of a 2FA login ("code needed"), must never use up the owner's tries.
+    const ipKey = `adminlogin:ip:${req.clientIp}`;
+    const acctKey = `adminlogin:acct:${body.email.toLowerCase()}`;
+    if ((await overLimit(rt, ipKey, 20)) || (await overLimit(rt, acctKey, 10))) {
       return reply.code(429).send({ error: "rate_limited" });
     }
     try {
@@ -35,7 +38,10 @@ export function adminRoutes(app: FastifyInstance, rt: Runtime) {
         .setCookie(ADMIN_COOKIE, token, { httpOnly: true, secure: secureCookie, sameSite: "lax", path: "/", expires: expiresAt })
         .send({ ok: true });
     } catch (err) {
-      if (err instanceof AuthError) return reply.code(err.code === "locked" ? 423 : 401).send({ error: err.code });
+      if (err instanceof AuthError) {
+        if (err.code === "invalid_credentials") await Promise.all([recordHit(rt, ipKey, 900), recordHit(rt, acctKey, 900)]);
+        return reply.code(err.code === "locked" ? 423 : 401).send({ error: err.code });
+      }
       throw err;
     }
   });

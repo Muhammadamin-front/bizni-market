@@ -25,6 +25,18 @@ export async function allow(rt: Runtime, key: string, max: number, windowSeconds
   return n <= max;
 }
 
+/** True when a counter already reached its limit. Does not add to it. */
+export async function overLimit(rt: Runtime, key: string, max: number): Promise<boolean> {
+  return Number((await rt.redis.get(`rl:${key}`)) ?? 0) >= max;
+}
+
+/** Adds one to a counter (the fixed window starts at its first hit). */
+export async function recordHit(rt: Runtime, key: string, windowSeconds: number): Promise<void> {
+  const k = `rl:${key}`;
+  const n = await rt.redis.incr(k);
+  if (n === 1) await rt.redis.expire(k, windowSeconds);
+}
+
 export function limitBy(rt: Runtime, name: string, max: number, windowSeconds: number) {
   return async (req: FastifyRequest, reply: FastifyReply) => {
     if (!(await allow(rt, `${name}:${req.clientIp}`, max, windowSeconds))) {
