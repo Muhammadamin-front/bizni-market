@@ -1,6 +1,6 @@
 "use client";
 
-import { Package, Plus } from "lucide-react";
+import { Package, Pencil, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { adminFetch, currency, fmtMoney, useAdminData } from "@/components/admin/api";
@@ -89,6 +89,42 @@ export default function ProductsPage() {
     return r.ok;
   };
 
+  // Selection for bulk delete (manual products only; MoySklad products are managed in MoySklad).
+  // Kept per list view: changing the page, filter or search starts with nothing selected.
+  const [selection, setSelection] = useState<{ path: string; ids: Set<string> }>({ path, ids: new Set() });
+  const selected = selection.path === path ? selection.ids : new Set<string>();
+  const setSelected = (ids: Set<string> | ((prev: Set<string>) => Set<string>)) =>
+    setSelection((cur) => {
+      const prev = cur.path === path ? cur.ids : new Set<string>();
+      return { path, ids: typeof ids === "function" ? ids(prev) : ids };
+    });
+  const [deleting, setDeleting] = useState<{ done: number; total: number } | null>(null);
+  const [notice, setNotice] = useState("");
+  const deletable = (data?.rows ?? []).filter((p) => p.source === "manual");
+  const allOnPage = deletable.length > 0 && deletable.every((p) => selected.has(p.id));
+  const toggle = (id: string) => setSelected((prev) => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
+
+  const removeMany = async (rows: Row[]) => {
+    if (!rows.length) return;
+    const question = rows.length === 1
+      ? t(`Удалить товар «${rows[0]!.name}»? Прошлые заказы с ним сохранятся.`, `«${rows[0]!.name}» tovari oʻchirilsinmi? U bilan qilingan eski buyurtmalar saqlanib qoladi.`)
+      : t(`Удалить выбранные товары (${rows.length})? Прошлые заказы с ними сохранятся.`, `Tanlangan ${rows.length} ta tovar oʻchirilsinmi? Ular bilan qilingan eski buyurtmalar saqlanib qoladi.`);
+    if (!window.confirm(question)) return;
+    setError(""); setNotice("");
+    let ok = 0;
+    setDeleting({ done: 0, total: rows.length });
+    for (const [i, p] of rows.entries()) {
+      const r = await adminFetch(`/products/${p.id}`, { method: "DELETE" });
+      if (r.ok) ok += 1;
+      setDeleting({ done: i + 1, total: rows.length });
+    }
+    setDeleting(null);
+    setSelected(new Set());
+    if (ok < rows.length) setError(t(`Удалено ${ok} из ${rows.length}. Остальные не удалось удалить.`, `${rows.length} tadan ${ok} tasi oʻchirildi. Qolganlarini oʻchirib boʻlmadi.`));
+    else setNotice(t(`Удалено: ${ok}`, `Oʻchirildi: ${ok} ta`));
+    reload();
+  };
+
   const nothingYet = data && data.total === 0 && filter === "all" && !debounced && !category;
 
   return (
@@ -102,6 +138,7 @@ export default function ProductsPage() {
       </div>
       {data?.connected ? <Notice tone="ok">{t("Товары из МойСклад меняются в МойСклад (здесь их можно только скрыть). Товары, добавленные вручную, редактируются здесь.", "MoySklad tovarlari MoySklad'da oʻzgartiriladi (bu yerda faqat yashirish mumkin). Qoʻlda qoʻshilgan tovarlar shu yerda tahrirlanadi.")}</Notice> : null}
       {error ? <Notice tone="bad">{error}</Notice> : null}
+      {notice ? <Notice tone="ok">{notice}</Notice> : null}
 
       {nothingYet ? (
         <Card>
@@ -129,13 +166,32 @@ export default function ProductsPage() {
             <span className="self-center text-small text-ink-2">{t("Найдено:", "Topildi:")} {data?.total ?? "…"}</span>
           </div>
 
+          {deletable.length > 0 ? (
+            <div className="mb-2 flex min-h-11 flex-wrap items-center gap-3 rounded-control bg-sunken px-3 py-1.5 text-small">
+              <label className="flex items-center gap-2">
+                <input type="checkbox" className="size-4" checked={allOnPage} onChange={() => setSelected(allOnPage ? new Set() : new Set(deletable.map((p) => p.id)))} />
+                {t("Выбрать все на странице", "Sahifadagi hammasini tanlash")}
+              </label>
+              {selected.size > 0 ? (
+                <button className={`${btn} gap-1 text-promo`} disabled={!!deleting} onClick={() => removeMany(deletable.filter((p) => selected.has(p.id)))}>
+                  <Trash2 aria-hidden className="size-4" />
+                  {t(`Удалить выбранные (${selected.size})`, `Tanlanganlarni oʻchirish (${selected.size})`)}
+                </button>
+              ) : null}
+              {deleting ? <span className="tnum text-ink-2">{t("Удаление…", "Oʻchirilmoqda…")} {deleting.done} / {deleting.total}</span> : null}
+            </div>
+          ) : null}
+
           {loading && !data ? <p className="text-ink-2">{t("Загрузка…", "Yuklanmoqda…")}</p> : null}
           {data && data.rows.length === 0 ? <p className="py-8 text-center text-ink-2">{t("Ничего не найдено.", "Hech narsa topilmadi.")}</p> : null}
           <ul className="divide-y divide-line">
             {data?.rows.map((p) => {
               const manual = p.source === "manual";
               return (
-                <li key={p.id} className="grid grid-cols-[3.5rem_minmax(0,1fr)] items-center gap-x-3 gap-y-2 py-3 md:grid-cols-[3.5rem_minmax(0,1fr)_auto_auto_auto]">
+                <li key={p.id} className="grid grid-cols-[1.25rem_3.5rem_minmax(0,1fr)] items-center gap-x-3 gap-y-2 py-3 md:grid-cols-[1.25rem_3.5rem_minmax(0,1fr)_auto_auto_auto_auto]">
+                  {manual ? (
+                    <input type="checkbox" className="size-4" checked={selected.has(p.id)} onChange={() => toggle(p.id)} aria-label={`${t("Выбрать", "Tanlash")}: ${p.name}`} />
+                  ) : <span />}
                   <Link href={`/admin/products/${p.id}`} className={`flex size-14 items-center justify-center overflow-hidden rounded-control border border-line ${p.thumb ? "bg-white" : "bg-sunken"}`} aria-label={`${t("Открыть", "Ochish")}: ${p.name}`}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     {p.thumb ? <img src={p.thumb} alt="" width={56} height={56} className="size-full object-contain" loading="lazy" /> : <Package aria-hidden className="size-6 text-line-strong" strokeWidth={1.5} />}
@@ -153,7 +209,7 @@ export default function ProductsPage() {
                       {p.price <= 0 ? <Badge tone="warn">{t("нет цены — не виден", "narx yoʻq — koʻrinmaydi")}</Badge> : null}
                     </p>
                   </div>
-                  <div className="col-span-2 flex flex-wrap items-center gap-x-4 gap-y-2 md:col-span-1 md:contents">
+                  <div className="col-span-3 flex flex-wrap items-center gap-x-4 gap-y-2 md:col-span-1 md:contents">
                     <div className="flex items-center gap-1 text-small">
                       <span className="w-16 text-caption text-ink-2 md:hidden">{t("Цена", "Narx")}</span>
                       {manual ? <InlineNumber key={`p${p.price}`} money label={`${t("Цена", "Narx")}: ${p.name}`} value={p.price} suffix={currency(t.lang)} onSave={(v) => patch(p.id, { price: v })} /> : <span className="tnum">{p.price > 0 ? fmtMoney(p.price, t.lang) : "—"}</span>}
@@ -166,6 +222,17 @@ export default function ProductsPage() {
                       <input type="checkbox" className="size-4" checked={!p.hidden} disabled={p.archived} onChange={async (e) => { await patch(p.id, { hidden: !e.target.checked }); reload(); }} />
                       <span className="md:sr-only">{t("Показывать", "Koʻrsatish")}</span>
                     </label>
+                    <div className="flex items-center gap-1">
+                      <Link href={`/admin/products/${p.id}`} className={`${btn} gap-1`} title={t("Изменить название, описание, фото, категорию", "Nomi, tavsifi, rasmlari, kategoriyasini oʻzgartirish")}>
+                        <Pencil aria-hidden className="size-4" />
+                        {manual ? t("Изменить", "Tahrirlash") : t("Открыть", "Ochish")}
+                      </Link>
+                      {manual ? (
+                        <button className={`${btn} px-3 text-promo`} disabled={!!deleting} onClick={() => removeMany([p])} aria-label={`${t("Удалить", "Oʻchirish")}: ${p.name}`} title={t("Удалить", "Oʻchirish")}>
+                          <Trash2 aria-hidden className="size-4" />
+                        </button>
+                      ) : null}
+                    </div>
                   </div>
                 </li>
               );
