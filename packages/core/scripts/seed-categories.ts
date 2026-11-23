@@ -2,9 +2,10 @@
 // exists (same Uzbek or Russian name) is skipped. Products are NOT created here: the owner adds them in /admin.
 // They all go INSIDE the "Kanselyariya" section (created if missing), so they never mix with "Kompyuterlar va xizmatlar".
 //
-//   BASE=https://kanso.uz ADMIN_EMAIL=… ADMIN_PASSWORD=… pnpm --filter @shop/core exec tsx scripts/seed-categories.ts
+//   BASE=https://kanso.uz pnpm --filter @shop/core exec tsx scripts/seed-categories.ts
+// The admin email, password (typed hidden) and 2FA code (if enabled) are asked in the terminal; ADMIN_EMAIL / ADMIN_PASSWORD / ADMIN_TOTP also work.
 // Add DRY=1 to only print what would be created.
-const BASE = process.env.BASE!.replace(/\/$/, "");
+const BASE = (process.env.BASE ?? "https://kanso.uz").replace(/\/$/, "");
 const ORIGIN = process.env.ORIGIN ?? BASE;
 
 const CATEGORIES: { uz: string; ru: string }[] = [
@@ -22,6 +23,35 @@ const CATEGORIES: { uz: string; ru: string }[] = [
   { uz: "Shtempel mahsulotlari", ru: "Штемпельная продукция" },
 ];
 
+function ask(question: string, hidden = false): Promise<string> {
+  return new Promise((resolve) => {
+    process.stdout.write(question);
+    const stdin = process.stdin;
+    let value = "";
+    if (hidden && stdin.isTTY) stdin.setRawMode(true);
+    stdin.setEncoding("utf8");
+    stdin.resume();
+    const onData = (chunk: string) => {
+      for (const ch of chunk) {
+        if (ch === "\r" || ch === "\n") {
+          if (hidden && stdin.isTTY) stdin.setRawMode(false);
+          stdin.pause();
+          stdin.off("data", onData);
+          process.stdout.write("\n");
+          return resolve(value.trim());
+        }
+        if (ch === "\u0003") process.exit(130);
+        if (ch === "\u007f" || ch === "\b") value = value.slice(0, -1);
+        else {
+          value += ch;
+          if (!hidden) process.stdout.write(ch);
+        }
+      }
+    };
+    stdin.on("data", onData);
+  });
+}
+
 let cookie = "";
 async function api<T>(method: string, path: string, body?: unknown): Promise<T> {
   const res = await fetch(`${BASE}/api/v1/admin${path}`, {
@@ -35,7 +65,14 @@ async function api<T>(method: string, path: string, body?: unknown): Promise<T> 
   return (await res.json()) as T;
 }
 
-await api("POST", "/login", { email: process.env.ADMIN_EMAIL, password: process.env.ADMIN_PASSWORD });
+const email = process.env.ADMIN_EMAIL ?? (await ask("Admin email: "));
+const password = process.env.ADMIN_PASSWORD ?? (await ask("Admin parol (koʻrinmaydi): ", true));
+try {
+  await api("POST", "/login", { email, password, totp: process.env.ADMIN_TOTP });
+} catch (err) {
+  if (!String(err).includes("totp_required")) throw err;
+  await api("POST", "/login", { email, password, totp: await ask("2FA kodi (6 ta raqam): ") });
+}
 const existing = await api<{ id: string; name: string; uz: string | null; ru: string | null; sort_order: number; parent_id: string | null }[]>("GET", "/categories");
 const norm = (s: string | null) => (s ?? "").trim().toLowerCase();
 const have = new Set(existing.flatMap((c) => [norm(c.name), norm(c.uz), norm(c.ru)]).filter(Boolean));
