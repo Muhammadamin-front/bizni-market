@@ -50,7 +50,8 @@ export function Footer({ locale, content, botUsername }: { locale: Locale; conte
           </div>
         ) : null}
       </div>
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-4 py-4 lg:px-6">
+      <div className="border-t border-line">
+       <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-3 px-4 py-4 lg:px-6">
         <p className="text-caption text-ink-2">{m.footer.rights(m.brand.name)}</p>
         {/* /admin has its own login and is not localized; no prefetch so visitors never load admin code. */}
         <Link
@@ -65,6 +66,7 @@ export function Footer({ locale, content, botUsername }: { locale: Locale; conte
           </svg>
           {m.footer.admin}
         </Link>
+       </div>
       </div>
     </footer>
   );

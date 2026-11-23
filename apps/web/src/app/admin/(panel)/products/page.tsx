@@ -125,6 +125,28 @@ export default function ProductsPage() {
     reload();
   };
 
+  const removeAll = async () => {
+    const word = t("УДАЛИТЬ", "OʻCHIRISH");
+    const typed = window.prompt(
+      t(
+        `Будут удалены ВСЕ товары, добавленные вручную (включая образцы, с которыми магазин запускался). Категории, баннеры и прошлые заказы останутся. Отменить нельзя.\n\nЧтобы подтвердить, напишите: ${word}`,
+        `QOʻLDA QOʻSHILGAN BARCHA tovarlar oʻchiriladi (doʻkon boshlangandagi namuna tovarlar ham). Kategoriyalar, bannerlar va eski buyurtmalar qoladi. Qaytarib boʻlmaydi.\n\nTasdiqlash uchun yozing: ${word}`,
+      ),
+    );
+    if (typed === null) return;
+    if (typed.trim().toUpperCase().replace(/[ʻ'`’]/g, "") !== word.replace(/[ʻ'`’]/g, "")) {
+      setNotice("");
+      setError(t("Не подтверждено: товары не удалены.", "Tasdiqlanmadi: tovarlar oʻchirilmadi."));
+      return;
+    }
+    setError(""); setNotice("");
+    const r = await adminFetch<{ deleted?: number }>("/products/delete-all-manual", { body: { confirm: "DELETE" } });
+    if (r.ok) setNotice(t(`Удалено товаров: ${r.data.deleted ?? 0}`, `Oʻchirildi: ${r.data.deleted ?? 0} ta tovar`));
+    else setError(t("Не удалось удалить.", "Oʻchirib boʻlmadi."));
+    setSelected(new Set());
+    reload();
+  };
+
   const nothingYet = data && data.total === 0 && filter === "all" && !debounced && !category;
 
   return (
@@ -245,6 +267,23 @@ export default function ProductsPage() {
           </div>
         </Card>
       )}
+
+      {!nothingYet && data ? (
+        <Card title={t("Очистить каталог", "Katalogni tozalash")}>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="max-w-xl text-small text-ink-2">
+              {t(
+                "Удалить сразу все товары, добавленные вручную, например образцы, с которыми магазин запускался. Категории, баннеры и заказы останутся.",
+                "Qoʻlda qoʻshilgan barcha tovarlarni birdaniga oʻchirish, masalan doʻkon boshlangandagi namuna tovarlarni. Kategoriyalar, bannerlar va buyurtmalar qoladi.",
+              )}
+            </p>
+            <button className={`${btn} gap-1 border-promo text-promo`} onClick={removeAll} disabled={!!deleting}>
+              <Trash2 aria-hidden className="size-4" />
+              {t("Удалить все товары", "Barcha tovarlarni oʻchirish")}
+            </button>
+          </div>
+        </Card>
+      ) : null}
     </div>
   );
 }

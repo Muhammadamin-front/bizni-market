@@ -63,6 +63,7 @@ export interface Messages {
     allBrands: string;
     featured: string;
     newArrivals: string;
+    comingSoon: string;
     offers: string;
     bestsellers: string;
     viewAll: string;

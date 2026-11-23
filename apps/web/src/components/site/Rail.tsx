@@ -1,6 +1,7 @@
 import type { ProductCardData } from "@shop/shared";
 import Link from "next/link";
 import { ProductTile } from "@/components/ProductTile";
+import { RailList } from "./RailList";
 
 /** A titled horizontal rail of products (home page). Renders nothing when empty: a section with no data is not shown. */
 export function Rail({ title, products, moreHref, moreLabel }: { title: string; products: ProductCardData[]; moreHref?: string; moreLabel?: string }) {
@@ -15,13 +16,13 @@ export function Rail({ title, products, moreHref, moreLabel }: { title: string; 
           </Link>
         ) : null}
       </div>
-      <ul className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] lg:mx-0 lg:px-0 [&::-webkit-scrollbar]:hidden">
+      <RailList>
         {products.map((p) => (
-          <li key={p.id} className="w-44 shrink-0 snap-start sm:w-52">
+          <li key={p.id}>
             <ProductTile product={p} />
           </li>
         ))}
-      </ul>
+      </RailList>
     </section>
   );
 }

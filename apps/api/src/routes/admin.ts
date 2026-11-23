@@ -262,6 +262,17 @@ export function adminRoutes(app: FastifyInstance, rt: Runtime) {
     return reply.code(204).send();
   });
 
+  /** Clears the hand-made catalogue in one go (e.g. the sample products the shop started with). Categories, banners and orders stay. */
+  app.post("/v1/admin/products/delete-all-manual", { preHandler: guard }, async (req, reply) => {
+    const { confirm } = z.object({ confirm: z.string() }).parse(req.body);
+    if (confirm !== "DELETE") return reply.code(400).send({ error: "confirm_required" });
+    const gone = await rt.db.delete(products).where(eq(products.source, "manual")).returning({ id: products.id });
+    clearCatalogCache();
+    await revalidateWeb(rt, ["catalog"], { immediate: true });
+    await audit(rt, req.admin!.adminId, "product_delete_all_manual", "product", null, { count: gone.length });
+    return { deleted: gone.length };
+  });
+
   // Raw image bytes (the admin downsizes big phone photos in the browser first). Every photo becomes a 1:1 white-background square.
   app.post("/v1/admin/products/:id/images", { preHandler: guard, bodyLimit: 15 * 1024 * 1024 }, async (req, reply) => {
     const id = idParam(req);

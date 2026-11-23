@@ -21,7 +21,11 @@ export function CategoryTiles({ roots, locale }: { roots: CategoryNode[]; locale
               <div className="flex flex-1 flex-col justify-between p-5">
                 <div>
                   <p className="text-lead font-bold sm:text-title">{r.name}</p>
-                  <p className="mt-1 text-small text-ink-2">{m.home.products(r.productCount)}</p>
+                  {r.productCount > 0 ? (
+                    <p className="mt-1 text-small text-ink-2">{m.home.products(r.productCount)}</p>
+                  ) : (
+                    <p className="mt-2 inline-flex rounded-full bg-sunken px-2.5 py-0.5 text-caption font-semibold text-ink-2">{m.home.comingSoon}</p>
+                  )}
                 </div>
                 <span className="mt-4 inline-flex items-center gap-1.5 text-small font-semibold text-action">
                   {m.home.open}
@@ -29,6 +33,11 @@ export function CategoryTiles({ roots, locale }: { roots: CategoryNode[]; locale
                 </span>
               </div>
               <div aria-hidden className="relative w-[42%] shrink-0 sm:w-[52%]">
+                {r.covers.length === 0 ? (
+                  <div className="absolute inset-3 flex items-center justify-center rounded-control bg-sunken">
+                    <Package className="size-12 text-line-strong" strokeWidth={1.25} />
+                  </div>
+                ) : null}
                 {r.covers.slice(0, 3).map((src, i) => (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img

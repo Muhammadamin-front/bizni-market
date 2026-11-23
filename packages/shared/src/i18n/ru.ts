@@ -63,6 +63,7 @@ export const ru: Messages = {
     allBrands: "Все бренды",
     featured: "Выбор магазина",
     newArrivals: "Новинки",
+    comingSoon: "Скоро",
     offers: "Акции",
     bestsellers: "Хиты продаж",
     viewAll: "Все",

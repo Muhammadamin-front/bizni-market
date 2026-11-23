@@ -71,7 +71,7 @@ export function ProductCard({
   const out = product.stockStatus === "out";
   const m = messages.product;
   return (
-    <article className={cn("relative flex flex-col overflow-hidden rounded-card border border-line bg-card", className)}>
+    <article className={cn("relative flex h-full flex-col overflow-hidden rounded-card border border-line bg-card", className)}>
       <div className={cn("relative flex aspect-square items-center justify-center", photoFrame(product, media, "p-3"))}>
         <div className={cn("flex size-full items-center justify-center", out && "opacity-50")}>
           <ProductImage product={product} media={media} size={400} />

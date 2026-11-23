@@ -129,12 +129,15 @@ export async function categoryTree(rt: Rt, locale: Locale): Promise<{ tree: Cate
     return n.productCount;
   };
   roots.forEach(rollUp);
-  const prune = (nodes: CategoryNode[]): CategoryNode[] => nodes.filter((n) => n.productCount > 0).map((n) => ({ ...n, children: prune(n.children) }));
+  // Empty sub-categories are hidden; top-level sections stay even when empty, so a new section the owner has just
+  // created (e.g. computers next to stationery) is shown on the home page as "coming soon" instead of vanishing.
+  const prune = (nodes: CategoryNode[], top = false): CategoryNode[] =>
+    nodes.filter((n) => top || n.productCount > 0).map((n) => ({ ...n, children: prune(n.children) }));
   const mark = (n: CategoryNode, segment: CategoryNode["segment"]) => {
     n.segment = segment;
     n.children.forEach((c) => mark(c, segment));
   };
-  const pruned = prune(roots);
+  const pruned = prune(roots, true);
   for (const r of pruned) mark(r, s.segmentRootCategories[r.slug] ?? null);
   const prunedFlat = new Map<string, CategoryNode>();
   const index = (n: CategoryNode) => {

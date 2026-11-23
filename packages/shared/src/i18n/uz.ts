@@ -64,6 +64,7 @@ export const uz: Messages = {
     allBrands: "Barcha brendlar",
     featured: "Tanlanganlar",
     newArrivals: "Yangi tovarlar",
+    comingSoon: "Tez orada",
     offers: "Aksiyalar",
     bestsellers: "Koʻp sotilganlar",
     viewAll: "Hammasi",
