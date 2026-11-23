@@ -18,5 +18,5 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 export default async function CatalogPage({ params, searchParams }: Props) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
-  return <Listing locale={locale} searchParams={await searchParams} basePath={`/${locale}/catalog`} heading={getMessages(locale).nav.catalog} />;
+  return <Listing locale={locale} searchParams={await searchParams} basePath={`/${locale}/catalog`} browse heading={getMessages(locale).nav.catalog} />;
 }

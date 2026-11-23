@@ -186,7 +186,17 @@ export async function createOrder(rt: Runtime, input: CheckoutInput, ctx: Create
     await queueNotification(rt, {
       kind: "staff_new_order",
       chatId,
-      text: texts.staffNewOrder(view.number, ctx.channel === "tma" ? "Telegram" : "Sayt", input.name, input.phone, total, lines.length),
+      text: texts.staffNewOrder({
+        number: view.number,
+        channel: ctx.channel === "tma" ? "Telegram" : "Sayt",
+        name: input.name,
+        phone: input.phone,
+        total,
+        delivery: input.deliveryMethod === "delivery",
+        address: input.address,
+        comment: input.comment,
+        items: lines.slice(0, 20).map((l) => ({ name: l.p.name, qty: l.qty, sum: Math.round(l.p.price * l.qty) })),
+      }),
     });
   }
   return { order: view, created: true };

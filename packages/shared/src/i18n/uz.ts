@@ -12,8 +12,10 @@ export const uz: Messages = {
     mainNav: "Asosiy menyu",
   },
   language: { label: "Til", uz: "UZ", ru: "RU" },
-  search: { placeholder: "Qidirish…", label: "Mahsulotlarni qidirish", clear: "Tozalash" },
+  search: { placeholder: "Qidirish…", label: "Mahsulotlarni qidirish", clear: "Tozalash", submit: "Qidirish" },
+  theme: { label: "Mavzu", day: "Kunduzgi", night: "Tungi" },
   catalog: {
+    pickCategory: "Kategoriya tanlang, mahsulotlarni koʻrish uchun",
     all: "Hammasi",
     stationery: "Kanselyariya",
     grocery: "Kompyuterlar va xizmatlar",

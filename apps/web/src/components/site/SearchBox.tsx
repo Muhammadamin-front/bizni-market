@@ -9,7 +9,7 @@ import { formatPrice } from "@shop/shared";
 import { useI18n } from "@/lib/i18n";
 
 /** Search with instant suggestions (debounced). Enter goes to the full results page. */
-export function SearchBox({ initial = "" }: { initial?: string }) {
+export function SearchBox({ initial = "", submitLabel }: { initial?: string; submitLabel?: string }) {
   const { locale, messages, href } = useI18n();
   const router = useRouter();
   const [q, setQ] = useState(initial);
@@ -55,8 +55,13 @@ export function SearchBox({ initial = "" }: { initial?: string }) {
   const empty = !result || (result.products.length === 0 && result.categories.length === 0 && result.brands.length === 0);
 
   return (
-    <div ref={boxRef} className="relative" onKeyDown={(e) => e.key === "Escape" && setOpen(false)}>
-      <SearchField value={q} onChange={setQ} onSubmit={go} placeholder={messages.search.placeholder} label={messages.search.label} clearLabel={messages.search.clear} />
+    <div ref={boxRef} className="relative flex gap-2" onKeyDown={(e) => e.key === "Escape" && setOpen(false)}>
+      <SearchField className="min-w-0 flex-1" value={q} onChange={setQ} onSubmit={go} placeholder={messages.search.placeholder} label={messages.search.label} clearLabel={messages.search.clear} />
+      {submitLabel ? (
+        <button type="button" onClick={() => go(q)} className="hidden h-11 shrink-0 rounded-control border border-line bg-sunken px-5 text-small font-semibold hover:border-line-strong sm:inline-flex sm:items-center">
+          {submitLabel}
+        </button>
+      ) : null}
       {open && !empty && q.trim().length >= 2 ? (
         <div id={listId} className="absolute inset-x-0 top-full z-40 mt-1 max-h-[70vh] overflow-y-auto rounded-card border border-line bg-card p-2">
           {result!.categories.length > 0 ? (

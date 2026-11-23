@@ -11,8 +11,10 @@ export const ru: Messages = {
     mainNav: "Основное меню",
   },
   language: { label: "Язык", uz: "UZ", ru: "RU" },
-  search: { placeholder: "Поиск…", label: "Поиск товаров", clear: "Очистить" },
+  search: { placeholder: "Поиск…", label: "Поиск товаров", clear: "Очистить", submit: "Найти" },
+  theme: { label: "Тема", day: "Дневная", night: "Ночная" },
   catalog: {
+    pickCategory: "Выберите категорию, чтобы увидеть товары",
     all: "Все",
     stationery: "Канцелярия",
     grocery: "Компьютеры и услуги",

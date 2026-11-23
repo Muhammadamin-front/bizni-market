@@ -41,7 +41,11 @@ export default async function SiteLayout({ children, params }: { children: React
   const m = getMessagesWithContent(locale, config?.content);
 
   return (
-    <html lang={locale} className={fontClass}>
+    <html lang={locale} className={fontClass} suppressHydrationWarning>
+      <head>
+        {/* Applies the saved day/night choice before first paint, so the page never flashes light. */}
+        <script dangerouslySetInnerHTML={{ __html: 'try{if(localStorage.getItem("kanso-theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}' }} />
+      </head>
       <body>
         <I18nProvider locale={locale} prefix={`/${locale}`} content={config?.content}>
           <ToastProvider>

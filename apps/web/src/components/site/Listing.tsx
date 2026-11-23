@@ -4,6 +4,7 @@ import { LayoutGrid, List } from "lucide-react";
 import Link from "next/link";
 import { ProductGrid } from "@/components/ProductTile";
 import { getBrands, getCatalog, getCategories } from "@/lib/server-api";
+import { CategoryBrowser } from "./CategoryBrowser";
 import { FilterPanel } from "./FilterPanel";
 import { SortSelect } from "./SortSelect";
 
@@ -19,9 +20,20 @@ function toParams(sp: SP, fixed: { category?: string; brand?: string }, locale: 
 }
 
 /** The catalogue: one server-rendered view for "all", a category, a brand and search results. */
-export async function Listing({ locale, searchParams, fixed = {}, basePath, heading, breadcrumb }: { locale: Locale; searchParams: SP; fixed?: { category?: string; brand?: string }; basePath: string; heading: string; breadcrumb?: React.ReactNode }) {
+export async function Listing({ locale, searchParams, fixed = {}, basePath, heading, breadcrumb, browse = false }: { locale: Locale; searchParams: SP; fixed?: { category?: string; brand?: string }; basePath: string; heading: string; breadcrumb?: React.ReactNode; browse?: boolean }) {
   const m = getMessages(locale);
   const params = toParams(searchParams, fixed, locale);
+  // Browse mode (the /catalog page): category list on the left, products on the right once a category (or a search) is picked.
+  const picked = Boolean(fixed.category || fixed.brand || (typeof searchParams.category === "string" && searchParams.category) || (typeof searchParams.q === "string" && searchParams.q.trim()));
+  if (browse && !picked) {
+    const roots = await getCategories(locale);
+    return (
+      <div className="flex flex-col gap-4 lg:flex-row">
+        <CategoryBrowser roots={roots} locale={locale} />
+        <p className="flex min-h-48 flex-1 items-center justify-center px-4 text-center text-small text-ink-2 lg:min-h-[60vh]">{m.catalog.pickCategory}</p>
+      </div>
+    );
+  }
   const parsed = CatalogQuery.safeParse(Object.fromEntries(params));
   if (!parsed.success) params.delete("page");
   const [page, categories, brands] = await Promise.all([getCatalog(params), getCategories(locale), getBrands()]);
@@ -42,9 +54,13 @@ export async function Listing({ locale, searchParams, fixed = {}, basePath, head
   return (
     <div>
       {breadcrumb}
-      <h1 className="text-title font-bold text-balance">{q ? m.listing.resultsFor(q) : heading}</h1>
-      <div className="mt-4 flex flex-col gap-6 lg:flex-row">
-        <FilterPanel categories={categories} brands={brands} activeCategory={fixed.category} total={page.total} priceMin={page.priceMin} priceMax={page.priceMax} />
+      {browse && !q ? null : <h1 className="text-title font-bold text-balance">{q ? m.listing.resultsFor(q) : heading}</h1>}
+      <div className={`flex flex-col gap-6 lg:flex-row ${browse && !q ? "" : "mt-4"}`}>
+        {browse ? (
+          <CategoryBrowser roots={categories} locale={locale} active={typeof searchParams.category === "string" ? searchParams.category : undefined} />
+        ) : (
+          <FilterPanel categories={categories} brands={brands} activeCategory={fixed.category} total={page.total} priceMin={page.priceMin} priceMax={page.priceMax} />
+        )}
         <section className="min-w-0 flex-1" aria-label={heading}>
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <p className="text-small text-ink-2" aria-live="polite">{m.catalog.results(page.total)}</p>

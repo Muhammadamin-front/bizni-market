@@ -11,8 +11,10 @@ export interface Messages {
   brand: { name: string };
   nav: { home: string; catalog: string; favorites: string; cart: string; profile: string; mainNav: string };
   language: { label: string; uz: string; ru: string };
-  search: { placeholder: string; label: string; clear: string };
+  search: { placeholder: string; label: string; clear: string; submit: string };
+  theme: { label: string; day: string; night: string };
   catalog: {
+    pickCategory: string;
     all: string;
     stationery: string;
     grocery: string;
