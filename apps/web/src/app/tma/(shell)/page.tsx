@@ -36,9 +36,9 @@ export default function TmaHome() {
             <li key={r.id}>
               <Link href={`${href("/catalog")}?category=${r.slug}`} className="flex h-full flex-col overflow-hidden rounded-card border border-line bg-card active:bg-sunken">
                 <span className="relative flex h-24 items-center justify-center overflow-hidden bg-white">
-                  {r.covers[0] ? (
+                  {r.imageUrl || r.covers[0] ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={r.covers[0]} alt="" loading="lazy" className="size-full object-cover" />
+                    <img src={r.imageUrl ?? r.covers[0]} alt="" loading="lazy" className="size-full object-cover" />
                   ) : (
                     <Package aria-hidden className="size-9 text-[#c9c6bf]" strokeWidth={1.25} />
                   )}
@@ -58,9 +58,9 @@ export default function TmaHome() {
                 <Link href={`${href("/catalog")}?category=${c.slug}`} className="flex h-full items-center gap-2.5 overflow-hidden rounded-card border border-line bg-card p-2 pr-3 text-small font-medium active:bg-sunken">
                   {/* The category's own product photo (Telegram dark theme keeps photos on white, like product cards). */}
                   <span className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-control bg-white">
-                    {c.covers[0] ? (
+                    {c.imageUrl || c.covers[0] ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={c.covers[0]} alt="" loading="lazy" className="size-full object-cover" />
+                      <img src={c.imageUrl ?? c.covers[0]} alt="" loading="lazy" className="size-full object-cover" />
                     ) : (
                       <Package aria-hidden className="size-5 text-[#c9c6bf]" strokeWidth={1.5} />
                     )}

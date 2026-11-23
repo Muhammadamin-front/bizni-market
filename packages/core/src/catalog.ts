@@ -81,6 +81,7 @@ interface CatRow {
   slug: string;
   name: string;
   parent_id: string | null;
+  image_key: string | null;
   cnt: number;
 }
 
@@ -97,13 +98,13 @@ export async function categoryTree(rt: Rt, locale: Locale): Promise<{ tree: Cate
   const s = await loadSettings(rt);
   const list = await rows<CatRow>(
     rt.db,
-    sql`SELECT c.id, c.slug, COALESCE(i.name, c.name) AS name, c.parent_id,
+    sql`SELECT c.id, c.slug, COALESCE(i.name, c.name) AS name, c.parent_id, c.image_key,
           (SELECT count(*)::int FROM products p LEFT JOIN product_overlays o ON o.product_id = p.id WHERE p.category_id = c.id AND ${visible(s)}) AS cnt
         FROM categories c LEFT JOIN category_i18n i ON i.category_id = c.id AND i.locale = ${locale}
         WHERE c.archived = false ORDER BY c.sort_order, c.name`,
   );
   const flat = new Map<string, CategoryNode>();
-  for (const r of list) flat.set(r.id, { id: r.id, slug: r.slug, name: r.name, parentId: r.parent_id, productCount: r.cnt, segment: null, covers: [], children: [] });
+  for (const r of list) flat.set(r.id, { id: r.id, slug: r.slug, name: r.name, parentId: r.parent_id, productCount: r.cnt, segment: null, covers: [], imageUrl: r.image_key ? mediaUrl(r.image_key, "large") : null, children: [] });
   // Photos for picture tiles: the store's own product photos, best-selling in-stock items first. Nothing to upload per category.
   const photos = await rows<{ category_id: string; storage_key: string }>(
     rt.db,

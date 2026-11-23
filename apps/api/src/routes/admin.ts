@@ -6,7 +6,7 @@ import {
   AuthError, audit, autoConfigure, enqueueSync, generateTotpSecret, getOrderStates, hashPassword, loadAccountOptions, loadSettings, loginAdmin, logoutAdmin, passwordProblem,
   BOT_DESCRIPTION_MAX, BOT_SHORT_DESCRIPTION_MAX, contentMap, processImage, productsByIds, pushOrderState, retryOrderPush, saveSettings, setupTelegram, stockSummary, TelegramApi, toOrderView, totpUri, verifyPassword, verifyTotp, clearCatalogCache,
   addProductImage, createManualCategory, createManualProduct, deleteManualCategory, deleteManualProduct, deleteProductImage, getAdminProduct, listAdminCategories, mediaUrl,
-  quickEditProduct, reorderProductImages, revalidateWeb, setLocalOrderStatus, updateCategory, updateManualProduct,
+  quickEditProduct, reorderProductImages, revalidateWeb, setCategoryImage, setLocalOrderStatus, updateCategory, updateManualProduct,
   type Runtime, type SyncJobName,
 } from "@shop/core";
 import { IntegrationSettingsSchema, LOCAL_ORDER_STATUSES, ManualCategoryInput, ManualProductInput, normalizeSearch, ProductQuickEdit } from "@shop/shared";
@@ -390,6 +390,20 @@ export function adminRoutes(app: FastifyInstance, rt: Runtime) {
     const id = idParam(req);
     const result = await deleteManualCategory(rt, id);
     await audit(rt, req.admin!.adminId, "category_delete", "category", id, result);
+    return result;
+  });
+  // The owner's own picture for a category (raw image bytes, like banners); DELETE goes back to product photos.
+  app.post("/v1/admin/categories/:id/image", { preHandler: guard, bodyLimit: 15 * 1024 * 1024 }, async (req, reply) => {
+    const id = idParam(req);
+    if (!Buffer.isBuffer(req.body)) return reply.code(415).send({ error: "send_image_bytes" });
+    const result = await setCategoryImage(rt, id, req.body);
+    await audit(rt, req.admin!.adminId, "category_image_set", "category", id);
+    return result;
+  });
+  app.delete("/v1/admin/categories/:id/image", { preHandler: guard }, async (req) => {
+    const id = idParam(req);
+    const result = await setCategoryImage(rt, id, null);
+    await audit(rt, req.admin!.adminId, "category_image_remove", "category", id);
     return result;
   });
   app.put("/v1/admin/categories/:id/i18n", { preHandler: guard }, async (req) => {

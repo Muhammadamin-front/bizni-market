@@ -33,12 +33,15 @@ export function CategoryTiles({ roots, locale }: { roots: CategoryNode[]; locale
                 </span>
               </div>
               <div aria-hidden className="relative w-[42%] shrink-0 sm:w-[52%]">
-                {r.covers.length === 0 ? (
+                {r.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={r.imageUrl} alt="" loading="lazy" className="absolute inset-0 size-full object-cover transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.03]" />
+                ) : r.covers.length === 0 ? (
                   <div className="absolute inset-3 flex items-center justify-center rounded-control bg-sunken">
                     <Package className="size-12 text-line-strong" strokeWidth={1.25} />
                   </div>
                 ) : null}
-                {r.covers.slice(0, 3).map((src, i) => (
+                {(r.imageUrl ? [] : r.covers.slice(0, 3)).map((src, i) => (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     key={src}
@@ -66,9 +69,9 @@ export function CategoryTiles({ roots, locale }: { roots: CategoryNode[]; locale
             <li key={c.id}>
               <Link href={`/${locale}/c/${c.slug}`} className="group flex h-full flex-col overflow-hidden rounded-card border border-line bg-card transition-colors duration-200 hover:border-line-strong">
                 <div className="relative aspect-[4/3] overflow-hidden bg-white">
-                  {c.covers[0] ? (
+                  {c.imageUrl || c.covers[0] ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={c.covers[0]} alt="" loading="lazy" className="size-full object-cover transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105" />
+                    <img src={c.imageUrl ?? c.covers[0]} alt="" loading="lazy" className="size-full object-cover transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105" />
                   ) : (
                     <Package aria-hidden className="absolute inset-0 m-auto size-8 text-line-strong" strokeWidth={1.25} />
                   )}

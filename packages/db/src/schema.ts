@@ -86,6 +86,8 @@ export const categories = pgTable(
     slug: text("slug").notNull().unique(),
     archived: boolean("archived").notNull().default(false),
     sortOrder: integer("sort_order").notNull().default(0),
+    /** The owner's own picture for this category (admin upload; ours, never touched by MoySklad sync). Null = product photos. */
+    imageKey: text("image_key"),
     msUpdatedAt: ts("ms_updated_at"),
     syncedAt: ts("synced_at").notNull().defaultNow(),
   },

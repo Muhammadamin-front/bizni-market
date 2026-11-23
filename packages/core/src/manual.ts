@@ -284,16 +284,28 @@ export interface AdminCategoryRow {
   uz: string | null;
   ru: string | null;
   products: number;
+  image_url: string | null;
 }
 
 export async function listAdminCategories(rt: Pick<Runtime, "db">): Promise<AdminCategoryRow[]> {
-  return (
+  const rows = (
     await rt.db.execute(sql`SELECT c.id, c.slug, c.name, c.source, c.parent_id, c.path_name, c.sort_order, c.archived,
       (SELECT name FROM category_i18n WHERE category_id = c.id AND locale = 'uz') AS uz,
       (SELECT name FROM category_i18n WHERE category_id = c.id AND locale = 'ru') AS ru,
-      (SELECT count(*)::int FROM products p WHERE p.category_id = c.id AND p.archived = false) AS products
+      (SELECT count(*)::int FROM products p WHERE p.category_id = c.id AND p.archived = false) AS products, c.image_key
       FROM categories c ORDER BY c.sort_order, c.name`)
-  ).rows as unknown as AdminCategoryRow[];
+  ).rows as unknown as (Omit<AdminCategoryRow, "image_url"> & { image_key: string | null })[];
+  return rows.map(({ image_key, ...r }) => ({ ...r, image_url: image_key ? mediaUrl(image_key, "small") : null }));
+}
+
+/** Sets (bytes) or removes (null) the owner's own picture for a category. Works for MoySklad categories too: the picture is ours. */
+export async function setCategoryImage(rt: Rt, id: string, bytes: Buffer | null): Promise<{ imageUrl: string | null }> {
+  const [row] = await rt.db.select({ id: categories.id }).from(categories).where(eq(categories.id, id)).limit(1);
+  if (!row) throw new CatalogEditError("not_found", 404);
+  const key = bytes ? (await processImage(rt.env.MEDIA_DIR, bytes)).storageKey : null;
+  await rt.db.update(categories).set({ imageKey: key }).where(eq(categories.id, id));
+  await changed(rt);
+  return { imageUrl: key ? mediaUrl(key, "small") : null };
 }
 
 async function freeCategorySlug(db: Db, name: string, exceptId?: string): Promise<string> {

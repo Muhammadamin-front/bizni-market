@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { adminFetch, useAdminData } from "@/components/admin/api";
+import { uploadImageTo } from "@/components/admin/images";
 import { categoryOptions } from "@/components/admin/ProductForm";
 import { useT, type L } from "@/components/admin/i18n";
 import { Badge, Card, Field, Notice, btn, btnPrimary, input } from "@/components/admin/ui";
 
 interface Cat {
   id: string; slug: string; name: string; source: "manual" | "moysklad"; parent_id: string | null; path_name: string; sort_order: number; archived: boolean;
-  uz: string | null; ru: string | null; products: number;
+  uz: string | null; ru: string | null; products: number; image_url: string | null;
 }
 interface Draft { nameUz: string; nameRu: string; parentId: string; sortOrder: string }
 
@@ -42,7 +43,7 @@ export default function CategoriesPage() {
         <h1 className="text-title font-bold">{t("Категории", "Kategoriyalar")}</h1>
         <Link href="/admin/products" className={btn}>{t("← Товары", "← Tovarlar")}</Link>
       </div>
-      <p className="text-small text-ink-2">{t("Название пишется на двух языках: покупатель видит его на своём языке сайта и Telegram. Категории без товаров в магазине не показываются. «Порядок» — чем меньше число, тем выше.", "Nomi ikki tilda yoziladi: xaridor uni sayt va Telegram'da oʻz tilida koʻradi. Tovari yoʻq kategoriyalar doʻkonda koʻrinmaydi. «Tartib»: raqam qancha kichik boʻlsa, shuncha yuqorida turadi.")}</p>
+      <p className="text-small text-ink-2">{t("Название пишется на двух языках: покупатель видит его на своём языке сайта и Telegram. Пустые подкатегории в магазине не показываются; основные разделы видны всегда (пустые — с пометкой «Скоро»). Картинка: своя фотография категории; без неё берутся фото её товаров. «Порядок» — чем меньше число, тем выше.", "Nomi ikki tilda yoziladi: xaridor uni sayt va Telegram'da oʻz tilida koʻradi. Boʻsh ichki kategoriyalar doʻkonda koʻrinmaydi; asosiy boʻlimlar doim koʻrinadi (boʻshi «Tez orada» bilan). Rasm: kategoriyaning oʻz surati; yuklanmasa, tovarlarining rasmlari olinadi. «Tartib»: raqam qancha kichik boʻlsa, shuncha yuqorida turadi.")}</p>
       {msg ? <Notice tone={msg.tone}>{msg.text}</Notice> : null}
 
       <Card title={t("Новая категория", "Yangi kategoriya")}>
@@ -82,9 +83,42 @@ export default function CategoriesPage() {
               <li key={c.id} className="flex flex-col gap-2 py-3" style={{ paddingLeft: `${Math.min(depth, 4) * 1.25}rem` }}>
                 <div className="flex flex-wrap items-center gap-2 text-small">
                   {depth ? <span className="text-ink-2">└</span> : null}
+                  <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-control border border-line bg-white">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    {c.image_url ? <img src={c.image_url} alt="" className="size-full object-cover" /> : <span className="text-caption text-ink-2">—</span>}
+                  </span>
                   <span className="font-semibold">{c.uz || c.ru || c.name}</span>
                   <span className="text-ink-2">· {t("товаров", "tovarlar")}: {c.products}</span>
                   {!manual ? <Badge>MoySklad: {c.name}</Badge> : null}
+                  <label className={`${btn} ml-auto cursor-pointer`}>
+                    {c.image_url ? t("Заменить картинку", "Rasmni almashtirish") : t("Загрузить картинку", "Rasm yuklash")}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      onChange={async (e) => {
+                        const f = e.target.files?.[0];
+                        e.target.value = "";
+                        if (!f) return;
+                        setMsg({ tone: "ok", text: t("Загрузка…", "Yuklanmoqda…") });
+                        const r = await uploadImageTo(`/categories/${c.id}/image`, f, t.lang);
+                        setMsg(r.ok ? { tone: "ok", text: t("Картинка сохранена.", "Rasm saqlandi.") } : { tone: "bad", text: r.error });
+                        reload();
+                      }}
+                    />
+                  </label>
+                  {c.image_url ? (
+                    <button
+                      className={btn}
+                      onClick={async () => {
+                        await adminFetch(`/categories/${c.id}/image`, { method: "DELETE" });
+                        setMsg({ tone: "ok", text: t("Картинка убрана: снова фото товаров.", "Rasm olib tashlandi: yana tovar rasmlari koʻrsatiladi.") });
+                        reload();
+                      }}
+                    >
+                      {t("Убрать", "Olib tashlash")}
+                    </button>
+                  ) : null}
                 </div>
                 <div className="grid gap-2 md:grid-cols-[1fr_1fr_1fr_5rem_auto]">
                   <input className={input} value={d.nameUz} onChange={(e) => set({ nameUz: e.target.value })} placeholder={manual ? t("Название (узбекский)", "Nomi (oʻzbekcha)") : t(`uz (по умолчанию: ${c.name})`, `uz (standart: ${c.name})`)} aria-label={`${t("Название", "Nomi")} uz: ${c.name}`} maxLength={120} />

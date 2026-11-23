@@ -12,6 +12,8 @@ export interface CategoryNode {
   segment: "stationery" | "grocery" | null;
   /** Up to three photos of in-stock products in this category or below it (most popular first), for picture tiles. */
   covers: string[];
+  /** The owner's own picture for this category (admin → Kategoriyalar), shown instead of product photos. */
+  imageUrl: string | null;
   children: CategoryNode[];
 }
 
