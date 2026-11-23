@@ -50,7 +50,18 @@ export function Footer({ locale, content, botUsername }: { locale: Locale; conte
           </div>
         ) : null}
       </div>
-      <p className="border-t border-line px-4 py-4 text-center text-caption text-ink-2">{m.footer.rights(m.brand.name)}</p>
+      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 border-t border-line px-4 py-4 text-caption text-ink-2">
+        <p>{m.footer.rights(m.brand.name)}</p>
+        {/* /admin has its own login and is not localized; no prefetch so visitors never load admin code. */}
+        <Link
+          href="/admin"
+          prefetch={false}
+          rel="nofollow"
+          className="inline-flex min-h-[44px] items-center rounded-md px-3 font-semibold text-ink-2 hover:bg-line/40 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-action"
+        >
+          {m.footer.admin}
+        </Link>
+      </div>
     </footer>
   );
 }

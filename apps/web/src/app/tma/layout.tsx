@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { fontClass } from "@/lib/fonts";
 import "../globals.css";
 
-export const metadata: Metadata = { title: "Bizni Market", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Kanso", robots: { index: false, follow: false } };
 export const viewport: Viewport = { width: "device-width", initialScale: 1, maximumScale: 1, viewportFit: "cover", themeColor: "#f6f3ee" };
 
 export default function TmaRootLayout({ children }: { children: ReactNode }) {

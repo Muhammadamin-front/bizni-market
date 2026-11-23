@@ -1,7 +1,7 @@
 import type { Messages } from "./types";
 
 export const ru: Messages = {
-  brand: { name: "Bizni Market" },
+  brand: { name: "Kanso" },
   nav: {
     home: "Главная",
     catalog: "Каталог",
@@ -173,6 +173,7 @@ export const ru: Messages = {
     privacy: "Политика конфиденциальности",
     rights: (name) => `© ${new Date().getFullYear()} ${name}`,
     openBot: "Открыть в Telegram",
+    admin: "Админ-панель",
   },
   profile: {
     title: "Профиль",

@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { fontClass } from "@/lib/fonts";
 import "../globals.css";
 
-export const metadata: Metadata = { title: "Bizni Market · admin", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Kanso · admin", robots: { index: false, follow: false } };
 
 export default function AdminRootLayout({ children }: { children: ReactNode }) {
   return (

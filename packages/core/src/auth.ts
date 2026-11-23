@@ -101,7 +101,7 @@ export function verifyTotp(secretBase32: string, code: string, atMs = Date.now()
 }
 
 export const generateTotpSecret = (): string => base32Encode(randomBytes(20));
-export const totpUri = (email: string, secret: string, issuer = "Bizni Market"): string =>
+export const totpUri = (email: string, secret: string, issuer = "Kanso"): string =>
   `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(email)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}&digits=6&period=30`;
 
 // ------------------------------------------------------------------------------------------------ admin accounts & sessions

@@ -44,7 +44,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         <div className="flex items-center justify-between gap-3 px-4 py-3 lg:block">
           <div className="min-w-0">
             <p className="text-lead font-bold">
-              Bizni Market{" "}
+              Kanso{" "}
               <span className="whitespace-nowrap font-medium text-ink-2 lg:block">
                 <span className="lg:hidden">· </span>
                 {t("админ", "admin")}
@@ -100,7 +100,7 @@ function Login({ onDone }: { onDone: () => void }) {
     <div className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-4 p-6">
       <LangSwitch className="self-end" />
       <div>
-        <p className="text-small font-semibold text-ink-2">Bizni Market</p>
+        <p className="text-small font-semibold text-ink-2">Kanso</p>
         <h1 className="text-title font-bold">{t("Вход в админку", "Admin panelga kirish")}</h1>
       </div>
       <form

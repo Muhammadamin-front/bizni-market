@@ -173,6 +173,7 @@ export interface Messages {
     privacy: string;
     rights: (name: string) => string;
     openBot: string;
+    admin: string;
   };
   profile: {
     title: string;

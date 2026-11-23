@@ -1,7 +1,7 @@
 // Gives the SAMPLE catalogue real photos from Pixabay (free licence, stored on our server, not hot-linked) and adds home banners.
 // Only touches products whose description says "Namuna tovar" (the sample seed) — the owner's own products are never changed.
 //
-//   BASE=http://localhost:3400 ORIGIN=https://biznimarket.vocora.uz ADMIN_EMAIL=… ADMIN_PASSWORD=… PIXABAY_API_KEY=… \
+//   BASE=http://localhost:3400 ORIGIN=https://kanso.uz ADMIN_EMAIL=… ADMIN_PASSWORD=… PIXABAY_API_KEY=… \
 //     tsx scripts/pixabay-photos.ts
 import sharp from "sharp";
 const BASE = process.env.BASE!.replace(/\/$/, "");

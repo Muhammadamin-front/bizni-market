@@ -2,7 +2,7 @@ import type { Messages } from "./types";
 
 // Uzbek, Latin script. Native-speaker review is an open item (see surface brief).
 export const uz: Messages = {
-  brand: { name: "Bizni Market" },
+  brand: { name: "Kanso" },
   nav: {
     home: "Bosh sahifa",
     catalog: "Katalog",
@@ -174,6 +174,7 @@ export const uz: Messages = {
     privacy: "Maxfiylik siyosati",
     rights: (name) => `© ${new Date().getFullYear()} ${name}`,
     openBot: "Telegramda ochish",
+    admin: "Admin panel",
   },
   profile: {
     title: "Profil",

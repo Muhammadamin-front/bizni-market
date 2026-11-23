@@ -2,7 +2,7 @@
 // Every product is an ordinary manual product (the owner edits or deletes it in /admin) and says "Namuna tovar" in its description.
 // The data and the flat illustrations come from the synthetic MoySklad generator (apps/mock-moysklad), which is invented, not real shop data.
 //
-//   BASE=http://localhost:3400 ORIGIN=https://biznimarket.vocora.uz ADMIN_EMAIL=… ADMIN_PASSWORD=… \
+//   BASE=http://localhost:3400 ORIGIN=https://kanso.uz ADMIN_EMAIL=… ADMIN_PASSWORD=… \
 //     pnpm --filter @shop/core exec tsx scripts/seed-sample-catalog.ts
 import sharp from "sharp";
 import { artSvg } from "../../../apps/mock-moysklad/src/art";
