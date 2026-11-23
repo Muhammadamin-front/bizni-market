@@ -8,6 +8,8 @@ interface I18n {
   messages: Messages;
   /** Prefixes a site path with the locale: href("/catalog") -> "/uz/catalog". */
   href: (path: string) => string;
+  /** The owner's blocks from the admin (colours, logo, which home sections are shown...). */
+  content: ContentMap | null;
 }
 
 const Ctx = createContext<I18n | null>(null);
@@ -26,7 +28,7 @@ export function I18nProvider({
   children: ReactNode;
 }) {
   const value = useMemo<I18n>(
-    () => ({ locale, messages: getMessagesWithContent(locale, content), href: (path) => `${prefix}${path === "/" ? "" : path}` || "/" }),
+    () => ({ locale, content: content ?? null, messages: getMessagesWithContent(locale, content), href: (path) => `${prefix}${path === "/" ? "" : path}` || "/" }),
     [locale, prefix, content],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

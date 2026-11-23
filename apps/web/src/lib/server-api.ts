@@ -36,7 +36,7 @@ export async function apiOrNull<T>(path: string, options: Options = {}): Promise
 
 export const getConfig = () => api<PublicConfig>("/v1/config", { revalidate: 30, tags: ["config"] });
 export const getHome = (locale: Locale) => api<HomePayload>(`/v1/home?locale=${locale}`, { revalidate: 60 });
-export const getCategories = (locale: Locale) => api<CategoryNode[]>(`/v1/categories?locale=${locale}`, { revalidate: 60 });
+export const getCategories = (locale: Locale, opts: { includeEmpty?: boolean } = {}) => api<CategoryNode[]>(`/v1/categories?locale=${locale}${opts.includeEmpty ? "&empty=1" : ""}`, { revalidate: 60 });
 export const getBrands = () => api<BrandDTO[]>("/v1/brands", { revalidate: 120 });
 export const getCatalog = (query: URLSearchParams) => api<CatalogPage>(`/v1/catalog/products?${query.toString()}`, { revalidate: 30 });
 export const getProduct = (slug: string, locale: Locale) => apiOrNull<ProductDetail | { redirectTo: string }>(`/v1/products/${encodeURIComponent(slug)}?locale=${locale}`, { revalidate: 60 });

@@ -1,22 +1,28 @@
 "use client";
 
+import type { PublicConfig } from "@shop/shared";
 import { BottomTabBar } from "@shop/ui";
 import { Heart, Home, LayoutGrid, ShoppingBasket, User } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
+import { ThemeStyle } from "@/components/ThemeStyle";
 import { useCart } from "@/lib/cart";
 import { FavoritesProvider } from "@/lib/favorites";
 import { I18nProvider, useI18n } from "@/lib/i18n";
 import { ToastProvider } from "@/lib/toast";
 import { TmaProvider, useBackButton } from "@/lib/tma";
+import { useFetch } from "@/lib/use-fetch";
 
 const TAB_ROOTS = ["/tma", "/tma/catalog", "/tma/favorites", "/tma/cart", "/tma/profile"];
 
 export function TmaApp({ children }: { children: ReactNode }) {
+  // The Mini App shows the same owner-edited texts and colours as the website.
+  const { data: config } = useFetch<PublicConfig>("/api/v1/config");
   return (
     <TmaProvider>
       {(s) => (
-        <I18nProvider locale={s.locale} prefix="/tma">
+        <I18nProvider locale={s.locale} prefix="/tma" content={config?.content}>
+          <ThemeStyle content={config?.content} />
           <ToastProvider>
             <FavoritesProvider token={s.token}>
               <Gate phase={s.phase} devMode={s.devMode}>{children}</Gate>

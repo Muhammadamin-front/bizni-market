@@ -92,8 +92,10 @@ export function clearCatalogCache(): void {
   treeCache.clear();
 }
 
-export async function categoryTree(rt: Rt, locale: Locale): Promise<{ tree: CategoryNode[]; flat: Map<string, CategoryNode> }> {
-  const cached = treeCache.get(locale);
+/** `includeEmpty`: also the sub-categories that have no products yet (the catalogue page lists them; the home page and counts do not). */
+export async function categoryTree(rt: Rt, locale: Locale, opts: { includeEmpty?: boolean } = {}): Promise<{ tree: CategoryNode[]; flat: Map<string, CategoryNode> }> {
+  const cacheKey = opts.includeEmpty ? `${locale}:all` : locale;
+  const cached = treeCache.get(cacheKey);
   if (cached && Date.now() - cached.at < TREE_TTL_MS) return cached;
   const s = await loadSettings(rt);
   const list = await rows<CatRow>(
@@ -133,7 +135,7 @@ export async function categoryTree(rt: Rt, locale: Locale): Promise<{ tree: Cate
   // Empty sub-categories are hidden; top-level sections stay even when empty, so a new section the owner has just
   // created (e.g. computers next to stationery) is shown on the home page as "coming soon" instead of vanishing.
   const prune = (nodes: CategoryNode[], top = false): CategoryNode[] =>
-    nodes.filter((n) => top || n.productCount > 0).map((n) => ({ ...n, children: prune(n.children) }));
+    nodes.filter((n) => top || opts.includeEmpty || n.productCount > 0).map((n) => ({ ...n, children: prune(n.children) }));
   const mark = (n: CategoryNode, segment: CategoryNode["segment"]) => {
     n.segment = segment;
     n.children.forEach((c) => mark(c, segment));
@@ -147,7 +149,7 @@ export async function categoryTree(rt: Rt, locale: Locale): Promise<{ tree: Cate
   };
   pruned.forEach(index);
   const value = { at: Date.now(), tree: pruned, flat: prunedFlat };
-  treeCache.set(locale, value);
+  treeCache.set(cacheKey, value);
   return value;
 }
 

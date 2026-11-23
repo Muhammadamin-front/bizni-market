@@ -26,7 +26,7 @@ export async function Listing({ locale, searchParams, fixed = {}, basePath, head
   // Browse mode (the /catalog page): category list on the left, products on the right once a category (or a search) is picked.
   const picked = Boolean(fixed.category || fixed.brand || (typeof searchParams.category === "string" && searchParams.category) || (typeof searchParams.q === "string" && searchParams.q.trim()));
   if (browse && !picked) {
-    const roots = await getCategories(locale);
+    const roots = await getCategories(locale, { includeEmpty: true });
     return (
       <div className="flex flex-col gap-4 lg:flex-row">
         <CategoryBrowser roots={roots} locale={locale} />
@@ -36,7 +36,7 @@ export async function Listing({ locale, searchParams, fixed = {}, basePath, head
   }
   const parsed = CatalogQuery.safeParse(Object.fromEntries(params));
   if (!parsed.success) params.delete("page");
-  const [page, categories, brands] = await Promise.all([getCatalog(params), getCategories(locale), getBrands()]);
+  const [page, categories, brands] = await Promise.all([getCatalog(params), getCategories(locale, { includeEmpty: browse }), getBrands()]);
   const view = searchParams.view === "list" ? "list" : "grid";
   const q = (typeof searchParams.q === "string" ? searchParams.q : "").trim();
   const totalPages = Math.max(1, Math.ceil(page.total / page.pageSize));

@@ -15,6 +15,8 @@ const NAV: { href: string; label: L; moysklad?: boolean }[] = [
   { href: "/admin/products", label: { ru: "Товары", uz: "Tovarlar" } },
   { href: "/admin/categories", label: { ru: "Категории", uz: "Kategoriyalar" } },
   { href: "/admin/content", label: { ru: "Контент", uz: "Sayt matnlari" } },
+  { href: "/admin/texts", label: { ru: "Все тексты", uz: "Barcha matnlar" } },
+  { href: "/admin/site", label: { ru: "Дизайн сайта", uz: "Sayt dizayni" } },
   { href: "/admin/settings", label: { ru: "Настройки", uz: "Sozlamalar" } },
   { href: "/admin/sync", label: { ru: "Синхронизация", uz: "Sinxronizatsiya" }, moysklad: true },
   { href: "/admin/system", label: { ru: "Система", uz: "Tizim" } },

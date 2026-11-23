@@ -29,7 +29,7 @@ function Catalog() {
   const showCategories = !category && !applied;
 
   useEffect(() => {
-    fetch(`/api/v1/categories?locale=${locale}`)
+    fetch(`/api/v1/categories?locale=${locale}&empty=1`)
       .then((r) => (r.ok ? (r.json() as Promise<CategoryNode[]>) : Promise.reject(new Error())))
       .then(setRoots)
       .catch(() => undefined);

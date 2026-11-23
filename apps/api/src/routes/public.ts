@@ -23,7 +23,8 @@ export function publicRoutes(app: FastifyInstance, rt: Runtime) {
   app.get("/v1/home", async (req) => homePayload(rt, Locale.parse((req.query as { locale?: string }).locale)));
 
   app.get("/v1/categories", async (req) => {
-    const { tree } = await categoryTree(rt, Locale.parse((req.query as { locale?: string }).locale));
+    const q = req.query as { locale?: string; empty?: string };
+    const { tree } = await categoryTree(rt, Locale.parse(q.locale), { includeEmpty: q.empty === "1" });
     return tree;
   });
 

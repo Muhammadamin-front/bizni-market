@@ -1,5 +1,6 @@
 "use client";
 
+import { logoKey } from "@shop/shared";
 import { LanguageSwitch } from "@shop/ui";
 import { Home, LayoutGrid, ShoppingBasket } from "lucide-react";
 import Link from "next/link";
@@ -11,7 +12,8 @@ import { ThemeToggle } from "./ThemeToggle";
 
 /** Two bands, like mirl.uz: a thin grey utility bar (theme, language), then logo, search and the icon tabs. */
 export function SiteHeader() {
-  const { locale, messages, href } = useI18n();
+  const { locale, messages, href, content } = useI18n();
+  const logo = logoKey(content);
   const pathname = usePathname();
   const params = useSearchParams();
   const { count } = useCart();
@@ -48,7 +50,12 @@ export function SiteHeader() {
       <div className="border-b border-line">
         <div className="mx-auto grid max-w-[1280px] grid-cols-[1fr_auto] items-center gap-x-4 gap-y-2 px-4 py-2.5 lg:grid-cols-[auto_minmax(0,36rem)_1fr] lg:px-6">
           <Link href={href("/")} className="inline-flex h-11 items-center text-lead font-extrabold tracking-tight">
-            {messages.brand.name}
+            {logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={`/media/${logo}-400.webp`} alt={messages.brand.name} className="h-9 w-auto max-w-44 object-contain" />
+            ) : (
+              messages.brand.name
+            )}
           </Link>
           <div className="col-span-2 row-start-2 lg:col-span-1 lg:col-start-2 lg:row-start-1">
             <SearchBox submitLabel={messages.search.submit} />

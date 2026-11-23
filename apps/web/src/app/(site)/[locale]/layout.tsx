@@ -2,6 +2,7 @@ import { isLocale, LOCALES, type Locale } from "@shop/shared";
 import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
+import { ThemeStyle } from "@/components/ThemeStyle";
 import { Footer } from "@/components/site/Footer";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { fontClass } from "@/lib/fonts";
@@ -43,6 +44,7 @@ export default async function SiteLayout({ children, params }: { children: React
   return (
     <html lang={locale} className={fontClass} suppressHydrationWarning>
       <head>
+        <ThemeStyle content={config?.content} />
         {/* Applies the saved day/night choice before first paint, so the page never flashes light. */}
         <script dangerouslySetInnerHTML={{ __html: 'try{if(localStorage.getItem("kanso-theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}' }} />
       </head>

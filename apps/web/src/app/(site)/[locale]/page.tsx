@@ -1,4 +1,4 @@
-import { getMessagesWithContent, isLocale } from "@shop/shared";
+import { getMessagesWithContent, isLocale, sectionVisible } from "@shop/shared";
 import { EmptyState } from "@shop/ui";
 import { PackageOpen } from "lucide-react";
 import Link from "next/link";
@@ -16,11 +16,12 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const [home, config] = await Promise.all([getHome(locale), getConfig().catch(() => null)]);
   const m = getMessagesWithContent(locale, config?.content);
   const empty = home.categories.length === 0 && home.brands.length === 0;
+  const show = (section: Parameters<typeof sectionVisible>[1]) => sectionVisible(config?.content, section);
   if (empty) return <EmptyState icon={<PackageOpen className="size-7" strokeWidth={1.5} />} title={m.home.emptyTitle} body={m.home.emptyBody} />;
 
   return (
     <div>
-      {home.banners.some((b) => b.imageUrl) ? (
+      {!show("banners") ? null : home.banners.some((b) => b.imageUrl) ? (
         <HeroCoverflow banners={home.banners} locale={locale} />
       ) : (
         <section className="rounded-card border border-line bg-card p-6 lg:p-10">
@@ -33,9 +34,9 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       )}
       {home.banners.some((b) => b.imageUrl) ? <h1 className="sr-only">{m.home.heroTitle}</h1> : null}
 
-      <CategoryTiles roots={home.categories} locale={locale} />
+      {show("categories") ? <CategoryTiles roots={home.categories} locale={locale} /> : null}
 
-      {home.brands.length > 0 ? (
+      {show("brands") && home.brands.length > 0 ? (
         <section className="mt-10" aria-label={m.home.brands}>
           <div className="mb-3 flex items-baseline justify-between">
             <h2 className="text-lead font-bold">{m.home.brands}</h2>
@@ -51,10 +52,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </section>
       ) : null}
 
-      <Rail title={m.home.featured} products={home.featured} />
-      <Rail title={m.home.offers} products={home.offers} moreHref={`/${locale}/catalog?sort=price_asc`} moreLabel={m.home.viewAll} />
-      <Rail title={m.home.newArrivals} products={home.newArrivals} moreHref={`/${locale}/catalog?sort=new`} moreLabel={m.home.viewAll} />
-      <Rail title={m.home.bestsellers} products={home.bestsellers} />
+      {show("featured") ? <Rail title={m.home.featured} products={home.featured} /> : null}
+      {show("offers") ? <Rail title={m.home.offers} products={home.offers} moreHref={`/${locale}/catalog?sort=price_asc`} moreLabel={m.home.viewAll} /> : null}
+      {show("newArrivals") ? <Rail title={m.home.newArrivals} products={home.newArrivals} moreHref={`/${locale}/catalog?sort=new`} moreLabel={m.home.viewAll} /> : null}
+      {show("bestsellers") ? <Rail title={m.home.bestsellers} products={home.bestsellers} /> : null}
     </div>
   );
 }

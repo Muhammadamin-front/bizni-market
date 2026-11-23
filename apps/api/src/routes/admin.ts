@@ -9,7 +9,7 @@ import {
   quickEditProduct, reorderProductImages, revalidateWeb, setCategoryImage, salesStats, setLocalOrderStatus, updateCategory, updateManualProduct,
   type Runtime, type SyncJobName,
 } from "@shop/core";
-import { IntegrationSettingsSchema, LOCAL_ORDER_STATUSES, ManualCategoryInput, ManualProductInput, normalizeSearch, ProductQuickEdit } from "@shop/shared";
+import { HEX_COLOR, HOME_SECTIONS, IntegrationSettingsSchema, LOCAL_ORDER_STATUSES, ManualCategoryInput, ManualProductInput, normalizeSearch, ProductQuickEdit } from "@shop/shared";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { ADMIN_COOKIE, allow, requireAdmin } from "../guards";
@@ -363,13 +363,39 @@ export function adminRoutes(app: FastifyInstance, rt: Runtime) {
 
   // ------------------------------------------------------------------------------------------ content & category names
   app.get("/v1/admin/content", { preHandler: guard }, async () => rt.db.select().from(contentBlocks).orderBy(contentBlocks.key));
-  app.put("/v1/admin/content/:key", { preHandler: guard }, async (req) => {
-    const key = z.string().regex(/^[a-z0-9._-]{1,80}$/).parse((req.params as { key: string }).key);
+  app.put("/v1/admin/content/:key", { preHandler: guard }, async (req, reply) => {
+    const key = z.string().regex(/^[A-Za-z0-9._-]{1,80}$/).parse((req.params as { key: string }).key);
     const max = key === "bot.description" ? BOT_DESCRIPTION_MAX : key === "bot.shortDescription" ? BOT_SHORT_DESCRIPTION_MAX : key === "bot.welcome" ? 4000 : key.startsWith("page.") ? 20_000 : 2000;
     const body = z.object({ uz: z.string().trim().max(max).default(""), ru: z.string().trim().max(max).default("") }).parse(req.body);
+    // Look-and-feel blocks carry a validated value, the same for both languages. The logo is set only through its upload.
+    if (key === "theme.logo") return reply.code(400).send({ error: "use_logo_upload" });
+    if (key === "theme.action" || key === "theme.ground") {
+      if (body.uz !== "" && !HEX_COLOR.test(body.uz)) return reply.code(422).send({ error: "bad_color", message: "Use a colour like #2f5bff." });
+      body.ru = body.uz;
+    }
+    if (key.startsWith("home.show.")) {
+      if (!(HOME_SECTIONS as readonly string[]).includes(key.slice("home.show.".length)) || !["", "0", "1"].includes(body.uz)) return reply.code(422).send({ error: "bad_section" });
+      body.ru = body.uz;
+    }
     await rt.db.insert(contentBlocks).values({ key, ...body }).onConflictDoUpdate({ target: contentBlocks.key, set: { ...body, updatedAt: new Date() } });
     await audit(rt, req.admin!.adminId, "content_update", "content", key);
     // Shop name, home texts and contacts show on every page: expire the cached pages now, not in 30 s.
+    await revalidateWeb(rt, ["config", "catalog"], { immediate: true });
+    return { ok: true };
+  });
+
+  // The owner's logo: kept proportions (not squared like product photos), shown in the site header instead of the shop name.
+  app.post("/v1/admin/site/logo", { preHandler: guard, bodyLimit: 6 * 1024 * 1024 }, async (req, reply) => {
+    if (!Buffer.isBuffer(req.body)) return reply.code(415).send({ error: "send_image_bytes" });
+    const done = await processImage(rt.env.MEDIA_DIR, req.body);
+    await rt.db.insert(contentBlocks).values({ key: "theme.logo", uz: done.storageKey, ru: done.storageKey }).onConflictDoUpdate({ target: contentBlocks.key, set: { uz: done.storageKey, ru: done.storageKey, updatedAt: new Date() } });
+    await audit(rt, req.admin!.adminId, "logo_update", "content", "theme.logo");
+    await revalidateWeb(rt, ["config", "catalog"], { immediate: true });
+    return { logoKey: done.storageKey, url: mediaUrl(done.storageKey, "medium") };
+  });
+  app.delete("/v1/admin/site/logo", { preHandler: guard }, async (req) => {
+    await rt.db.delete(contentBlocks).where(eq(contentBlocks.key, "theme.logo"));
+    await audit(rt, req.admin!.adminId, "logo_delete", "content", "theme.logo");
     await revalidateWeb(rt, ["config", "catalog"], { immediate: true });
     return { ok: true };
   });

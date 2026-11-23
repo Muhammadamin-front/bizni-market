@@ -53,5 +53,8 @@ Bot texts changed? Admin → Tizim → "Botni sozlash" re-applies descriptions/m
 Shop name, home title/text, bot welcome/descriptions, contacts, pages (Sayt matnlari); categories with their own pictures
 (Kategoriyalar; without one: product photos, then a default icon picture); products (edit/delete per row, bulk delete,
 "delete all products"); banners; admin password (Tizim → Xavfsizlik).
+Whole-site control: Barcha matnlar (`/admin/texts`: every plain UI text of the site and the Mini App, stored as content blocks `t.<path>`),
+Sayt dizayni (`/admin/site`: logo, accent/background colours `theme.*`, show/hide home sections `home.show.*`), Statistika (`/admin/stats`).
+All of it is content blocks (no migration); the Mini App reads the same blocks from `/api/v1/config`.
 
 More: `docs/DEPLOY-SERVER.md` (server install/rollback), `docs/ARCHITECTURE.md`, `docs/STATUS.md` (older build log).

@@ -1,6 +1,6 @@
 "use client";
 
-import type { HomePayload } from "@shop/shared";
+import { sectionVisible, type HomePayload } from "@shop/shared";
 import { Skeleton } from "@shop/ui";
 import Link from "next/link";
 import { CategoryArt } from "@/components/CategoryArt";
@@ -21,7 +21,8 @@ function Rail({ title, products }: { title: string; products: HomePayload["featu
 }
 
 export default function TmaHome() {
-  const { locale, messages: m, href } = useI18n();
+  const { locale, messages: m, href, content } = useI18n();
+  const show = (section: Parameters<typeof sectionVisible>[1]) => sectionVisible(content, section);
   const { data: home, loading, error } = useFetch<HomePayload>(`/api/v1/home?locale=${locale}`);
   if (loading && !home) return <div className="flex flex-col gap-3"><Skeleton className="h-11" /><Skeleton className="h-32" /><Skeleton className="h-32" /></div>;
   if (error || !home) return <p className="p-6 text-center text-ink-2">{m.errors.body}</p>;
@@ -29,6 +30,7 @@ export default function TmaHome() {
   return (
     <div>
       <Link href={href("/catalog")} className="flex h-11 items-center rounded-control border border-line bg-card px-4 text-ink-2">{m.search.placeholder}</Link>
+      {show("categories") ? (
       <section className="mt-5" aria-label={m.home.categories}>
         {/* Top-level sections first (stationery, computers…), each as a large tile; empty ones say "coming soon". */}
         <ul className={`grid gap-2 ${home.categories.length > 1 ? "grid-cols-2" : ""}`}>
@@ -73,10 +75,11 @@ export default function TmaHome() {
           </ul>
         ) : null}
       </section>
-      <Rail title={m.home.featured} products={home.featured} />
-      <Rail title={m.home.offers} products={home.offers} />
-      <Rail title={m.home.newArrivals} products={home.newArrivals} />
-      <Rail title={m.home.bestsellers} products={home.bestsellers} />
+      ) : null}
+      {show("featured") ? <Rail title={m.home.featured} products={home.featured} /> : null}
+      {show("offers") ? <Rail title={m.home.offers} products={home.offers} /> : null}
+      {show("newArrivals") ? <Rail title={m.home.newArrivals} products={home.newArrivals} /> : null}
+      {show("bestsellers") ? <Rail title={m.home.bestsellers} products={home.bestsellers} /> : null}
     </div>
   );
 }
