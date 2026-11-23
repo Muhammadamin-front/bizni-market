@@ -78,9 +78,9 @@ export async function setupTelegram(opts: { token: string; publicUrl: string; we
   record("setMyCommands(uz)", await bot.setMyCommands([{ command: "start", description: "Do‘konni ochish" }], "uz"));
   record("setMyCommands(ru)", await bot.setMyCommands([{ command: "start", description: "Открыть магазин" }], "ru"));
   record("setMyCommands(default)", await bot.setMyCommands([{ command: "start", description: "Do‘konni ochish / Открыть магазин" }]));
-  record("setMyDescription(uz)", await bot.setMyDescription("Kanselyariya va oziq-ovqat: joriy narx va qoldiq bilan. Buyurtma bering.", "uz"));
-  record("setMyDescription(ru)", await bot.setMyDescription("Канцелярия и продукты с актуальными ценами и наличием. Оформите заказ.", "ru"));
-  record("setMyShortDescription(uz)", await bot.setMyShortDescription("Kanselyariya va oziq-ovqat do‘koni", "uz"));
-  record("setMyShortDescription(ru)", await bot.setMyShortDescription("Канцелярия и продукты", "ru"));
+  record("setMyDescription(uz)", await bot.setMyDescription("Kanselyariya, elektronika va kompyuterlar: joriy narx va qoldiq bilan. Buyurtma bering.", "uz"));
+  record("setMyDescription(ru)", await bot.setMyDescription("Канцелярия, электроника и компьютеры с актуальными ценами и наличием. Оформите заказ.", "ru"));
+  record("setMyShortDescription(uz)", await bot.setMyShortDescription("Kanselyariya, elektronika va kompyuterlar", "uz"));
+  record("setMyShortDescription(ru)", await bot.setMyShortDescription("Канцелярия, электроника, компьютеры", "ru"));
   return { ok: steps.every((s) => s.ok), steps };
 }

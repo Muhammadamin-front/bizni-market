@@ -108,7 +108,7 @@ export default function ProductsPage() {
           <div className="flex flex-col items-center gap-3 py-10 text-center">
             <Package aria-hidden className="size-12 text-line-strong" strokeWidth={1.25} />
             <p className="text-lead font-semibold">{t("Товаров пока нет", "Hali tovar yoʻq")}</p>
-            <p className="max-w-md text-small text-ink-2">{t("Создайте пару категорий (например «Kanselyariya» и «Oziq-ovqat»), затем добавляйте товары: название, цена, остаток и фото. Они сразу появятся на сайте и в Telegram.", "Avval bir-ikkita kategoriya yarating (masalan, «Kanselyariya» va «Oziq-ovqat»), keyin tovar qoʻshing: nomi, narxi, qoldigʻi va rasmi. Ular darhol saytda va Telegram'da paydo boʻladi.")}</p>
+            <p className="max-w-md text-small text-ink-2">{t("Создайте пару категорий (например «Kanselyariya» и «Elektronika»), затем добавляйте товары: название, цена, остаток и фото. Они сразу появятся на сайте и в Telegram.", "Avval bir-ikkita kategoriya yarating (masalan, «Kanselyariya» va «Elektronika»), keyin tovar qoʻshing: nomi, narxi, qoldigʻi va rasmi. Ular darhol saytda va Telegram'da paydo boʻladi.")}</p>
             <div className="flex flex-wrap justify-center gap-2">
               <Link href="/admin/categories" className={btn}>{t("1. Категории", "1. Kategoriyalar")}</Link>
               <Link href="/admin/products/new" className={btnPrimary}>{t("2. Добавить первый товар", "2. Birinchi tovarni qoʻshish")}</Link>

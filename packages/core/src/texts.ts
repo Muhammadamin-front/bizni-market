@@ -4,8 +4,8 @@ import { formatPrice, type Locale } from "@shop/shared";
 export const texts = {
   start: (locale: Locale) =>
     locale === "ru"
-      ? "Добро пожаловать! Откройте магазин кнопкой ниже: канцелярия и продукты с актуальными ценами и наличием."
-      : "Xush kelibsiz! Do‘konni pastdagi tugma orqali oching: kanselyariya va oziq-ovqat, joriy narx va qoldiq bilan.",
+      ? "Добро пожаловать! Откройте магазин кнопкой ниже: канцелярия, электроника и компьютеры с актуальными ценами и наличием."
+      : "Xush kelibsiz! Do‘konni pastdagi tugma orqali oching: kanselyariya, elektronika va kompyuterlar, joriy narx va qoldiq bilan.",
   openShop: (locale: Locale) => (locale === "ru" ? "Открыть магазин" : "Do‘konni ochish"),
   orderReceived: (locale: Locale, number: string, total: number) =>
     locale === "ru"
