@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { adminFetch } from "./api";
 import { useShopName } from "./brand";
 import { LangSwitch, useT, type L } from "./i18n";
-import { btnPrimary, Field, input, Notice } from "./ui";
+import { btnPrimary, Field, input, Notice, PasswordInput } from "./ui";
 
 const NAV: { href: string; label: L; moysklad?: boolean }[] = [
   { href: "/admin", label: { ru: "Обзор", uz: "Umumiy holat" } },
@@ -129,7 +129,7 @@ function Login({ onDone }: { onDone: () => void }) {
           <input className={input} type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </Field>
         <Field label={t("Пароль", "Parol")}>
-          <input className={input} type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          <PasswordInput autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         </Field>
         {needTotp ? (
           <Field label={t("Код (6 цифр)", "Kod (6 ta raqam)")}>

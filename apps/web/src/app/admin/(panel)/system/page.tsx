@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { adminFetch, fmtDate, useAdminData } from "@/components/admin/api";
 import { useT, type L } from "@/components/admin/i18n";
-import { Badge, Card, Field, Notice, Table, btn, btnPrimary, input } from "@/components/admin/ui";
+import { Badge, Card, Field, Notice, PasswordInput, Table, btn, btnPrimary, input } from "@/components/admin/ui";
 
 export default function SystemPage() {
   const t = useT();
@@ -61,8 +61,8 @@ function Security() {
           if (r.ok) { setCur(""); setNext(""); }
         }}
       >
-        <Field label={t("Текущий пароль", "Joriy parol")}><input className={input} type="password" autoComplete="current-password" value={cur} onChange={(e) => setCur(e.target.value)} required /></Field>
-        <Field label={t("Новый пароль (от 12 знаков)", "Yangi parol (kamida 12 belgi)")}><input className={input} type="password" autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} required /></Field>
+        <Field label={t("Текущий пароль", "Joriy parol")}><PasswordInput autoComplete="current-password" value={cur} onChange={(e) => setCur(e.target.value)} required /></Field>
+        <Field label={t("Новый пароль (от 12 знаков)", "Yangi parol (kamida 12 belgi)")}><PasswordInput autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} required /></Field>
         <div className="self-end"><button className={btn} type="submit">{t("Сменить пароль", "Parolni almashtirish")}</button></div>
       </form>
       <div className="mt-4 border-t border-line pt-3">

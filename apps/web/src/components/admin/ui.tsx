@@ -1,6 +1,8 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { Eye, EyeOff } from "lucide-react";
+import { useState, type InputHTMLAttributes, type ReactNode } from "react";
+import { useT } from "./i18n";
 
 export function Card({ title, children, actions, className = "" }: { title?: string; children: ReactNode; actions?: ReactNode; className?: string }) {
   return (
@@ -67,4 +69,24 @@ export function Field({ label, hint, children }: { label: string; hint?: string;
 export function Notice({ tone = "warn", children }: { tone?: "warn" | "bad" | "ok"; children: ReactNode }) {
   const cls = tone === "bad" ? "border-promo/30 bg-promo-bg text-promo" : tone === "ok" ? "border-ok/30 bg-ok-bg text-ok" : "border-warn/30 bg-warn-bg text-warn";
   return <p role="status" className={`rounded-control border px-3 py-2 text-small ${cls}`}>{children}</p>;
+}
+
+/** A password field with a show/hide eye button. Everything else (value, onChange, autoComplete, required...) is passed through. */
+export function PasswordInput(props: Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "className">) {
+  const t = useT();
+  const [shown, setShown] = useState(false);
+  return (
+    <div className="relative">
+      <input {...props} type={shown ? "text" : "password"} className={`${input} pr-10`} />
+      <button
+        type="button"
+        onClick={() => setShown((v) => !v)}
+        aria-label={shown ? t("Скрыть пароль", "Parolni yashirish") : t("Показать пароль", "Parolni koʻrsatish")}
+        aria-pressed={shown}
+        className="absolute top-1/2 right-1 inline-flex size-7 -translate-y-1/2 items-center justify-center rounded-control text-ink-2 hover:text-ink"
+      >
+        {shown ? <EyeOff aria-hidden className="size-4" /> : <Eye aria-hidden className="size-4" />}
+      </button>
+    </div>
+  );
 }
