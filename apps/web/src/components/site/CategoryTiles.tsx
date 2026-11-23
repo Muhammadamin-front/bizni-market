@@ -28,7 +28,7 @@ export function CategoryTiles({ roots, locale }: { roots: CategoryNode[]; locale
                     <p className="mt-2 inline-flex rounded-full bg-sunken px-2.5 py-0.5 text-caption font-semibold text-ink-2">{m.home.comingSoon}</p>
                   )}
                 </div>
-                <span className="mt-4 inline-flex items-center gap-1.5 text-small font-semibold text-action">
+                <span className="mt-4 inline-flex items-center gap-1.5 text-small font-semibold text-link">
                   {m.home.open}
                   <ArrowRight aria-hidden className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
                 </span>

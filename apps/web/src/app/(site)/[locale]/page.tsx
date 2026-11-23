@@ -40,7 +40,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         <section className="mt-10" aria-label={m.home.brands}>
           <div className="mb-3 flex items-baseline justify-between">
             <h2 className="text-lead font-bold">{m.home.brands}</h2>
-            <Link href={`/${locale}/brands`} className="text-small font-semibold text-action hover:underline">{m.home.allBrands}</Link>
+            <Link href={`/${locale}/brands`} className="text-small font-semibold text-link hover:underline">{m.home.allBrands}</Link>
           </div>
           <ul className="flex flex-wrap gap-2">
             {home.brands.map((b) => (

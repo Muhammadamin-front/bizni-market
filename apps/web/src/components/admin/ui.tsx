@@ -27,7 +27,7 @@ export function Stat({ label, value, tone }: { label: string; value: ReactNode; 
 }
 
 export function Badge({ children, tone = "neutral" }: { children: ReactNode; tone?: "neutral" | "ok" | "bad" | "warn" }) {
-  const cls = tone === "ok" ? "bg-[#e3f3ea] text-ok" : tone === "bad" ? "bg-[#fdecea] text-promo" : tone === "warn" ? "bg-[#fdf0e3] text-warn" : "bg-sunken text-ink-2";
+  const cls = tone === "ok" ? "bg-ok-bg text-ok" : tone === "bad" ? "bg-promo-bg text-promo" : tone === "warn" ? "bg-warn-bg text-warn" : "bg-sunken text-ink-2";
   return <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-caption font-semibold ${cls}`}>{children}</span>;
 }
 
@@ -65,6 +65,6 @@ export function Field({ label, hint, children }: { label: string; hint?: string;
 }
 
 export function Notice({ tone = "warn", children }: { tone?: "warn" | "bad" | "ok"; children: ReactNode }) {
-  const cls = tone === "bad" ? "border-promo/30 bg-[#fdecea] text-promo" : tone === "ok" ? "border-ok/30 bg-[#e3f3ea] text-ok" : "border-warn/30 bg-[#fdf0e3] text-warn";
+  const cls = tone === "bad" ? "border-promo/30 bg-promo-bg text-promo" : tone === "ok" ? "border-ok/30 bg-ok-bg text-ok" : "border-warn/30 bg-warn-bg text-warn";
   return <p role="status" className={`rounded-control border px-3 py-2 text-small ${cls}`}>{children}</p>;
 }

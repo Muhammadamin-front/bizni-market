@@ -17,7 +17,7 @@ export function IconButton({ icon, pressed, className, type = "button", ...rest 
       className={cn(
         "inline-flex size-11 items-center justify-center rounded-control text-ink transition-[background-color,transform] duration-150 ease-out",
         "hover:bg-sunken active:scale-95 disabled:cursor-not-allowed disabled:text-off-ink disabled:hover:bg-transparent",
-        pressed && "text-action",
+        pressed && "text-link",
         className,
       )}
       {...rest}

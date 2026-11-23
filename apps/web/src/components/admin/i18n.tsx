@@ -71,7 +71,7 @@ export function LangSwitch({ className = "" }: { className?: string }) {
   return (
     <div role="group" aria-label="Til / Язык" className={`inline-flex shrink-0 overflow-hidden rounded-control border border-line text-caption font-semibold ${className}`}>
       {(["uz", "ru"] as const).map((l) => (
-        <button key={l} type="button" aria-pressed={lang === l} onClick={() => setAdminLang(l)} className={`px-2.5 py-1 ${lang === l ? "bg-ink text-white" : "bg-card text-ink-2 hover:bg-sunken hover:text-ink"}`}>
+        <button key={l} type="button" aria-pressed={lang === l} onClick={() => setAdminLang(l)} className={`px-2.5 py-1 ${lang === l ? "bg-ink text-on-ink" : "bg-card text-ink-2 hover:bg-sunken hover:text-ink"}`}>
           {l === "uz" ? "UZ" : "RU"}
         </button>
       ))}

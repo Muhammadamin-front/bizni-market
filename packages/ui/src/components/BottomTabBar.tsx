@@ -35,7 +35,7 @@ export function BottomTabBar({ items, activeId, onSelect, label, className }: Bo
                 onClick={() => onSelect(item.id)}
                 className={cn(
                   "flex h-16 w-full flex-col items-center justify-center gap-0.5 text-[0.6875rem] font-semibold transition-colors duration-150",
-                  active ? "text-action" : "text-ink-2 hover:text-ink",
+                  active ? "text-link" : "text-ink-2 hover:text-ink",
                 )}
               >
                 <span className="relative">

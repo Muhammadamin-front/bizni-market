@@ -63,7 +63,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           {NAV.filter((n) => !n.moysklad || me.connected).map((n) => {
             const active = n.href === "/admin" ? pathname === "/admin" : pathname.startsWith(n.href);
             return (
-              <Link key={n.href} href={n.href} aria-current={active ? "page" : undefined} className={`shrink-0 rounded-control px-3 py-2 text-small font-medium ${active ? "bg-ink text-white" : "text-ink-2 hover:bg-sunken hover:text-ink"}`}>
+              <Link key={n.href} href={n.href} aria-current={active ? "page" : undefined} className={`shrink-0 rounded-control px-3 py-2 text-small font-medium ${active ? "bg-ink text-on-ink" : "text-ink-2 hover:bg-sunken hover:text-ink"}`}>
                 {n.label[t.lang]}
               </Link>
             );

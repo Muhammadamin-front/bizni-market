@@ -219,7 +219,7 @@ export default function ProductsPage() {
                     {p.thumb ? <img src={p.thumb} alt="" width={56} height={56} className="size-full object-contain" loading="lazy" /> : <Package aria-hidden className="size-6 text-line-strong" strokeWidth={1.5} />}
                   </Link>
                   <div className="min-w-0">
-                    <Link href={`/admin/products/${p.id}`} className="font-medium hover:text-action hover:underline">{p.name}</Link>
+                    <Link href={`/admin/products/${p.id}`} className="font-medium hover:text-link hover:underline">{p.name}</Link>
                     <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-caption text-ink-2">
                       {p.article ? <span className="font-mono">{p.article}</span> : null}
                       <span>{p.category ?? t("без категории", "kategoriyasiz")}</span>

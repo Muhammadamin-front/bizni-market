@@ -92,7 +92,7 @@ export function SearchBox({ initial = "", submitLabel }: { initial?: string; sub
               ))}
             </Group>
           ) : null}
-          <button type="button" onClick={() => go(q)} className="mt-1 w-full rounded-control px-3 py-2.5 text-left text-body font-semibold text-action hover:bg-sunken">
+          <button type="button" onClick={() => go(q)} className="mt-1 w-full rounded-control px-3 py-2.5 text-left text-body font-semibold text-link hover:bg-sunken">
             {messages.listing.searchAll(q.trim())}
           </button>
         </div>

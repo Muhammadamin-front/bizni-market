@@ -15,7 +15,7 @@ export interface QuantityStepperProps {
 }
 
 const stepButton =
-  "inline-flex size-11 shrink-0 items-center justify-center text-action transition-[background-color,transform] duration-150 ease-out " +
+  "inline-flex size-11 shrink-0 items-center justify-center text-link transition-[background-color,transform] duration-150 ease-out " +
   "hover:bg-sunken active:scale-90 disabled:cursor-not-allowed disabled:text-off-ink disabled:hover:bg-transparent";
 
 /** Float-safe: 0.1 + 0.2 must read 0.3, not 0.30000000000000004. */

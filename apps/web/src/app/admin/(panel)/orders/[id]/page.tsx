@@ -35,7 +35,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
   return (
     <div className="flex max-w-4xl flex-col gap-4">
-      <Link href="/admin/orders" className="text-small text-action hover:underline">{t("← Все заказы", "← Barcha buyurtmalar")}</Link>
+      <Link href="/admin/orders" className="text-small text-link hover:underline">{t("← Все заказы", "← Barcha buyurtmalar")}</Link>
       <h1 className="text-title font-bold">{t(`Заказ ${o.number}`, `Buyurtma ${o.number}`)}</h1>
       {message ? <Notice tone={message.tone}>{message.text}</Notice> : null}
       {o.syncStatus === "local" ? (
@@ -44,7 +44,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             {LOCAL_ORDER_STATUSES.map((code) => {
               const info = LOCAL_ORDER_STATUS_INFO[code];
               const current = o.statusCode === code;
-              const tone = info.type === "Successful" ? "bg-ok text-white border-ok" : info.type === "Unsuccessful" ? "bg-promo text-white border-promo" : "bg-ink text-white border-ink";
+              const tone = info.type === "Successful" ? "bg-ok text-on-ink border-ok" : info.type === "Unsuccessful" ? "bg-promo text-on-ink border-promo" : "bg-ink text-on-ink border-ink";
               return (
                 <button
                   key={code}
@@ -91,7 +91,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
       )}
       <Card title={t("Клиент и доставка", "Mijoz va yetkazib berish")}>
         <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-small">
-          <dt className="text-ink-2">{t("Клиент", "Mijoz")}</dt><dd>{o.contactName}, <a className="text-action hover:underline" href={`tel:${o.contactPhone}`}>{o.contactPhone}</a></dd>
+          <dt className="text-ink-2">{t("Клиент", "Mijoz")}</dt><dd>{o.contactName}, <a className="text-link hover:underline" href={`tel:${o.contactPhone}`}>{o.contactPhone}</a></dd>
           <dt className="text-ink-2">{t("Канал", "Kanal")}</dt><dd>{o.channel === "tma" ? `Telegram${o.telegramId ? ` (id ${o.telegramId})` : ""}` : t("Сайт (гость)", "Sayt (mehmon)")}</dd>
           <dt className="text-ink-2">{t("Получение", "Qabul qilish")}</dt><dd>{o.deliveryMethod === "pickup" ? t("Самовывоз", "Oʻzi olib ketadi") : o.address}</dd>
           <dt className="text-ink-2">{t("Комментарий", "Izoh")}</dt><dd>{o.comment || "—"}</dd>

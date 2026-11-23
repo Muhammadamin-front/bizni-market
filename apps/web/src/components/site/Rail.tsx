@@ -11,7 +11,7 @@ export function Rail({ title, products, moreHref, moreLabel }: { title: string; 
       <div className="mb-3 flex items-baseline justify-between gap-3">
         <h2 className="text-lead font-bold">{title}</h2>
         {moreHref ? (
-          <Link href={moreHref} className="text-small font-semibold text-action hover:underline">
+          <Link href={moreHref} className="text-small font-semibold text-link hover:underline">
             {moreLabel}
           </Link>
         ) : null}

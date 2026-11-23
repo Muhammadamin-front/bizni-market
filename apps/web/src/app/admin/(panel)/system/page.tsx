@@ -118,7 +118,7 @@ function Featured() {
         ))}
       </ul>
       <div className="mt-3"><input className={`${input} max-w-sm`} placeholder={t("Найти товар, чтобы добавить", "Qoʻshish uchun tovar qidiring")} value={q} onChange={(e) => setQ(e.target.value)} />
-        <ul className="mt-1 text-small">{found?.rows.map((r) => <li key={r.id}><button className="py-1 text-left text-action hover:underline" onClick={() => { void save([...(data?.map((x) => x.id) ?? []), r.id]); setQ(""); }}>+ {r.name}</button></li>)}</ul></div>
+        <ul className="mt-1 text-small">{found?.rows.map((r) => <li key={r.id}><button className="py-1 text-left text-link hover:underline" onClick={() => { void save([...(data?.map((x) => x.id) ?? []), r.id]); setQ(""); }}>+ {r.name}</button></li>)}</ul></div>
     </Card>
   );
 }

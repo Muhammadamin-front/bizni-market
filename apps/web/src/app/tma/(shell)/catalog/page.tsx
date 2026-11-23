@@ -92,7 +92,7 @@ function Catalog() {
       ) : (
         <>
       {category ? (
-        <Link href="/tma/catalog" className="mt-3 inline-flex items-center gap-1 text-small font-semibold text-action">
+        <Link href="/tma/catalog" className="mt-3 inline-flex items-center gap-1 text-small font-semibold text-link">
           <ChevronLeft aria-hidden className="size-4" />
           {m.catalog.categories}
         </Link>

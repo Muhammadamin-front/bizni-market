@@ -32,7 +32,7 @@ export function ProductBuy({ product }: { product: ProductCardData }) {
         />
       </div>
       {quantity > 0 ? (
-        <Link href={href("/cart")} className="text-small font-semibold text-action underline underline-offset-4">
+        <Link href={href("/cart")} className="text-small font-semibold text-link underline underline-offset-4">
           {messages.nav.cart} →
         </Link>
       ) : null}

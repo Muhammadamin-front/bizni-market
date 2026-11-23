@@ -30,7 +30,7 @@ export function Footer({ locale, content, botUsername }: { locale: Locale; conte
             </div>
           ) : null}
           {botUsername ? (
-            <a href={`https://t.me/${botUsername}`} className="mt-3 inline-block text-small font-semibold text-action underline underline-offset-4" rel="noopener">
+            <a href={`https://t.me/${botUsername}`} className="mt-3 inline-block text-small font-semibold text-link underline underline-offset-4" rel="noopener">
               {m.footer.openBot}
             </a>
           ) : null}

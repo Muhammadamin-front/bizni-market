@@ -35,7 +35,7 @@ export default function StatsPage() {
         <h1 className="text-title font-bold">{t("Статистика", "Statistika")}</h1>
         <div className="flex gap-1" role="group" aria-label={t("Период", "Davr")}>
           {PERIODS.map((p) => (
-            <button key={p} className={`${btn} ${days === p ? "border-ink bg-ink text-white hover:bg-ink" : ""}`} aria-pressed={days === p} onClick={() => setDays(p)}>
+            <button key={p} className={`${btn} ${days === p ? "border-ink bg-ink text-on-ink hover:bg-ink" : ""}`} aria-pressed={days === p} onClick={() => setDays(p)}>
               {p === 365 ? t("Год", "Yil") : t(`${p} дн.`, `${p} kun`)}
             </button>
           ))}

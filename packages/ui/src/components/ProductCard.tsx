@@ -86,7 +86,7 @@ export function ProductCard({
             // so it stays visible in the Mini App's dark theme too.
             icon={
               <span className="flex size-8 items-center justify-center rounded-full bg-white/90 shadow-sm">
-                <Heart aria-hidden className={cn("size-[18px]", favorite ? "fill-current text-action" : "text-[#1d1d1f]")} />
+                <Heart aria-hidden className={cn("size-[18px]", favorite ? "fill-current text-link" : "text-[#1d1d1f]")} />
               </span>
             }
           />

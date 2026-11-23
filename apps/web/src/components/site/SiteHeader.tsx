@@ -33,7 +33,7 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-30 bg-card">
-      <div className="bg-[#e6e8ee] text-ink">
+      <div className="bg-bar text-ink">
         <div className="mx-auto flex max-w-[1280px] items-center justify-end gap-3 px-4 py-1 lg:px-6">
           <ThemeToggle />
           <LanguageSwitch
@@ -67,7 +67,7 @@ export function SiteHeader() {
                 href={href(to === "/" ? "/" : to)}
                 aria-current={active ? "page" : undefined}
                 aria-label={badge ? `${label}: ${messages.cart.items(badge)}` : label}
-                className={`relative flex min-w-14 flex-col items-center gap-0.5 rounded-[10px] px-2.5 py-1.5 text-[0.6875rem] leading-tight font-medium transition-colors duration-150 ${active ? "bg-[#eef1ff] text-action" : "text-ink-2 hover:text-ink"}`}
+                className={`relative flex min-w-14 flex-col items-center gap-0.5 rounded-[10px] px-2.5 py-1.5 text-[0.6875rem] leading-tight font-medium transition-colors duration-150 ${active ? "bg-tint-strong text-link" : "text-ink-2 hover:text-ink"}`}
               >
                 <Icon aria-hidden className="size-6" strokeWidth={1.5} />
                 {label}

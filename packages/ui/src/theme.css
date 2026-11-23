@@ -32,6 +32,25 @@
   /* Promo flash on offers (used sparingly; never on pressables). */
   --color-promo: #b3261e;
 
+  /* Text on the "ink" colour (dark in light mode, light in dark mode) and soft tinted surfaces: every colour a component uses is a
+     token, so dark mode only has to swap values (see html[data-theme="dark"] in the app css). */
+  --color-on-ink: #ffffff;
+  /* The action colour as TEXT (links, active tab): same as the action colour in light mode, lighter in dark mode for contrast. */
+  --color-link: var(--color-action);
+  --color-tint: #f4f6fd;
+  --color-tint-strong: #eef1ff;
+  --color-bar: #e6e8ee;
+  --color-ok-bg: #e3f3ea;
+  --color-promo-bg: #fdecea;
+  --color-warn-bg: #fdf0e3;
+  --color-select: #d5deff;
+  --color-art-a: #e8eefc;
+  --color-art-b: #f4f6fb;
+  --color-art-c: #eef1f7;
+  --color-art-d: #dfe7fb;
+  --color-art-e: #e9edf8;
+  --color-art-icon: #3b5bdb;
+
   /* Shape: 10 px cards, 8 px controls. Hairlines instead of shadows. */
   --radius-card: 10px;
   --radius-control: 8px;
@@ -98,7 +117,7 @@
     -webkit-font-smoothing: antialiased;
   }
   ::selection {
-    background: #d5deff;
+    background: var(--color-select);
     color: var(--color-ink);
   }
   :focus-visible {

@@ -75,7 +75,7 @@ export default function TextsPage() {
               <li key={m.key} className="grid gap-2 py-3 md:grid-cols-2">
                 <p className="font-mono text-caption text-ink-2 md:col-span-2">
                   {m.key.slice(2)}
-                  {changed ? <span className="ml-2 rounded-full bg-[#e3f3ea] px-2 py-0.5 font-sans text-ok">{t("изменён", "oʻzgartirilgan")}</span> : null}
+                  {changed ? <span className="ml-2 rounded-full bg-ok-bg px-2 py-0.5 font-sans text-ok">{t("изменён", "oʻzgartirilgan")}</span> : null}
                 </p>
                 {(["uz", "ru"] as const).map((l) => (
                   <input key={l} className={input} maxLength={2000} value={v[l]} placeholder={m[l]} aria-label={`${m.key} ${l}`} onChange={(e) => setDraft({ ...draft, [m.key]: { ...v, [l]: e.target.value } })} />

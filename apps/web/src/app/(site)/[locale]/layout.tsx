@@ -51,7 +51,7 @@ export default async function SiteLayout({ children, params }: { children: React
       <body>
         <I18nProvider locale={locale} prefix={`/${locale}`} content={config?.content}>
           <ToastProvider>
-            {config?.demo ? <p className="bg-ink px-4 py-1.5 text-center text-caption text-white">{m.home.demoBanner}</p> : null}
+            {config?.demo ? <p className="bg-ink px-4 py-1.5 text-center text-caption text-on-ink">{m.home.demoBanner}</p> : null}
             <Suspense>
               <SiteHeader />
             </Suspense>

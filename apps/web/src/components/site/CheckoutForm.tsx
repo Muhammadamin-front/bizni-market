@@ -177,7 +177,7 @@ export function CheckoutForm({ token, orderPrefix, cartHref, prefill }: { token?
           <legend className="px-1 text-lead font-semibold">{m.deliveryMethod}</legend>
           <div role="radiogroup" aria-label={m.deliveryMethod} className="grid grid-cols-2 gap-2">
             {(["delivery", "pickup"] as const).map((v) => (
-              <label key={v} className={`flex min-h-12 cursor-pointer items-center justify-center rounded-control border px-3 text-center font-medium ${method === v ? "border-ink bg-ink text-white" : "border-line bg-card hover:border-line-strong"}`}>
+              <label key={v} className={`flex min-h-12 cursor-pointer items-center justify-center rounded-control border px-3 text-center font-medium ${method === v ? "border-ink bg-ink text-on-ink" : "border-line bg-card hover:border-line-strong"}`}>
                 <input type="radio" name="method" value={v} checked={method === v} onChange={() => setMethod(v)} className="sr-only" />
                 {v === "delivery" ? m.delivery : m.pickup}
               </label>
@@ -211,7 +211,7 @@ export function CheckoutForm({ token, orderPrefix, cartHref, prefill }: { token?
         <p className="mt-2 text-small text-ink-2">{m.payNote}</p>
         {below ? <p className="mt-2 text-small text-warn">{messages.cart.minimum(formatPrice(config!.minimumOrderAmount, locale))}</p> : null}
         {formError ? (
-          <p role="alert" className="mt-3 rounded-control bg-[#fdecea] px-3 py-2 text-small text-promo">
+          <p role="alert" className="mt-3 rounded-control bg-promo-bg px-3 py-2 text-small text-promo">
             {formError} {problems.length ? <Link href={cartHref} className="font-semibold underline">{m.fixLines}</Link> : null}
           </p>
         ) : null}

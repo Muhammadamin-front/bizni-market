@@ -42,13 +42,13 @@ export function CategoryArt({ name, size = "lg" }: { name: string; size?: "sm" |
   return (
     <span
       aria-hidden
-      className="absolute inset-0 flex items-center justify-center overflow-hidden bg-[linear-gradient(135deg,#e8eefc_0%,#f4f6fb_55%,#eef1f7_100%)]"
+      className="absolute inset-0 flex items-center justify-center overflow-hidden bg-[linear-gradient(135deg,var(--color-art-a)_0%,var(--color-art-b)_55%,var(--color-art-c)_100%)]"
     >
-      <span className="absolute -top-1/4 -right-1/4 size-3/4 rounded-full bg-[#dfe7fb]" />
-      <span className="absolute -bottom-1/3 -left-1/5 size-2/3 rounded-full bg-[#e9edf8]" />
+      <span className="absolute -top-1/4 -right-1/4 size-3/4 rounded-full bg-art-d" />
+      <span className="absolute -bottom-1/3 -left-1/5 size-2/3 rounded-full bg-art-e" />
       <span className="relative flex items-end gap-1">
-        {Main ? <Main className={`${main} text-[#3b5bdb]`} strokeWidth={1.25} /> : null}
-        {Second ? <Second className={`${second} text-[#3b5bdb]/60`} strokeWidth={1.5} /> : null}
+        {Main ? <Main className={`${main} text-art-icon`} strokeWidth={1.25} /> : null}
+        {Second ? <Second className={`${second} text-art-icon/60`} strokeWidth={1.5} /> : null}
       </span>
     </span>
   );

@@ -55,7 +55,7 @@ function Shell({ devMode, children }: { devMode: boolean; children: ReactNode })
 
   return (
     <div className="flex min-h-dvh flex-col">
-      {devMode ? <p className="bg-ink px-3 py-1 text-center text-caption text-white">{messages.profile.devNotice}</p> : null}
+      {devMode ? <p className="bg-ink px-3 py-1 text-center text-caption text-on-ink">{messages.profile.devNotice}</p> : null}
       <main className="flex-1 px-3 pt-3 pb-24">{children}</main>
       <BottomTabBar
         className="fixed inset-x-0 bottom-0 z-30"

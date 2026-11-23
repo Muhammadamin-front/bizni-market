@@ -24,7 +24,7 @@ export function LanguageSwitch({ value, onChange, label, options }: LanguageSwit
             onClick={() => onChange(option.locale)}
             className={cn(
               "h-9 min-w-11 rounded-[6px] px-2.5 text-small font-semibold transition-colors duration-150 ease-out",
-              selected ? "bg-ink text-white" : "text-ink-2 hover:text-ink",
+              selected ? "bg-ink text-on-ink" : "text-ink-2 hover:text-ink",
             )}
           >
             {option.label}

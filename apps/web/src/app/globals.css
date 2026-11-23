@@ -21,6 +21,21 @@ html[data-theme="dark"] {
   --color-promo: #ff8a80;
   --color-action: #4f74ff;
   --color-action-press: #6d8cff;
+  --color-on-ink: #141416;
+  --color-link: #8ea5ff;
+  --color-tint: #191c27;
+  --color-tint-strong: #232a47;
+  --color-bar: #0e0e10;
+  --color-ok-bg: #143024;
+  --color-promo-bg: #3a1d1b;
+  --color-warn-bg: #3a2a15;
+  --color-select: #2c3a78;
+  --color-art-a: #1f2640;
+  --color-art-b: #1a1f33;
+  --color-art-c: #181c2c;
+  --color-art-d: #262f52;
+  --color-art-e: #20284a;
+  --color-art-icon: #8ea5ff;
 }
 
 /* Hero ambience cross-fade (HeroCoverflow). */

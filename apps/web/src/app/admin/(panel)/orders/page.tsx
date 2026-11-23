@@ -79,7 +79,7 @@ export default function OrdersPage() {
           <Table head={["№", t("Дата", "Sana"), t("Клиент", "Mijoz"), t("Сумма", "Summa"), t("Канал", "Kanal"), t("Статус", "Holat"), t("Где ведётся", "Qayerda yuritiladi"), t("Действие", "Amal")]}>
             {data?.rows.map((o) => (
               <tr key={o.id}>
-                <td><Link href={`/admin/orders/${o.id}`} className="font-semibold text-action hover:underline">{o.number}</Link></td>
+                <td><Link href={`/admin/orders/${o.id}`} className="font-semibold text-link hover:underline">{o.number}</Link></td>
                 <td className="whitespace-nowrap">{fmtDate(o.createdAt)}</td>
                 <td>{o.contactName}<br /><span className="text-ink-2">{o.contactPhone}</span></td>
                 <td className="tnum whitespace-nowrap">{fmtMoney(o.total, t.lang)}</td>

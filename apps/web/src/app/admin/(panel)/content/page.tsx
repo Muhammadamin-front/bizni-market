@@ -168,7 +168,7 @@ function Categories() {
   const t = useT();
   return (
     <Card title={t("Категории", "Kategoriyalar")}>
-      <p className="text-small text-ink-2">{t("Названия категорий на двух языках, порядок и вложенность — в разделе", "Kategoriya nomlari ikki tilda, tartibi va joylashuvi:")} <Link href="/admin/categories" className="font-semibold text-action hover:underline">{t("Категории", "Kategoriyalar")}</Link>.</p>
+      <p className="text-small text-ink-2">{t("Названия категорий на двух языках, порядок и вложенность — в разделе", "Kategoriya nomlari ikki tilda, tartibi va joylashuvi:")} <Link href="/admin/categories" className="font-semibold text-link hover:underline">{t("Категории", "Kategoriyalar")}</Link>.</p>
     </Card>
   );
 }

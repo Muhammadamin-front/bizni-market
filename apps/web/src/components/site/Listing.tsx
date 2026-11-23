@@ -67,10 +67,10 @@ export async function Listing({ locale, searchParams, fixed = {}, basePath, head
             <div className="flex items-center gap-2">
               <SortSelect value={page.items.length ? (searchParams.sort as string | undefined) ?? "popular" : "popular"} />
               <nav aria-label={m.catalog.viewGrid} className="hidden gap-1 md:flex">
-                <Link href={link({ view: undefined })} aria-label={m.catalog.viewGrid} aria-current={view === "grid" ? "true" : undefined} className={`inline-flex size-10 items-center justify-center rounded-control border ${view === "grid" ? "border-ink bg-ink text-white" : "border-line bg-card text-ink-2 hover:text-ink"}`}>
+                <Link href={link({ view: undefined })} aria-label={m.catalog.viewGrid} aria-current={view === "grid" ? "true" : undefined} className={`inline-flex size-10 items-center justify-center rounded-control border ${view === "grid" ? "border-ink bg-ink text-on-ink" : "border-line bg-card text-ink-2 hover:text-ink"}`}>
                   <LayoutGrid aria-hidden className="size-5" />
                 </Link>
-                <Link href={link({ view: "list" })} aria-label={m.catalog.viewList} aria-current={view === "list" ? "true" : undefined} className={`inline-flex size-10 items-center justify-center rounded-control border ${view === "list" ? "border-ink bg-ink text-white" : "border-line bg-card text-ink-2 hover:text-ink"}`}>
+                <Link href={link({ view: "list" })} aria-label={m.catalog.viewList} aria-current={view === "list" ? "true" : undefined} className={`inline-flex size-10 items-center justify-center rounded-control border ${view === "list" ? "border-ink bg-ink text-on-ink" : "border-line bg-card text-ink-2 hover:text-ink"}`}>
                   <List aria-hidden className="size-5" />
                 </Link>
               </nav>

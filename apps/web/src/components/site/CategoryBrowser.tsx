@@ -20,7 +20,7 @@ export function CategoryBrowser({ roots, locale, active, basePath }: { roots: Ca
   const m = getMessages(locale);
   const base = basePath ?? `/${locale}/catalog`;
   return (
-    <aside aria-label={m.catalog.categories} className="w-full shrink-0 self-start rounded-[14px] bg-[#f4f6fd] p-2 lg:sticky lg:top-24 lg:max-h-[calc(100dvh-7rem)] lg:w-[316px] lg:overflow-y-auto lg:overscroll-contain [scrollbar-width:thin]">
+    <aside aria-label={m.catalog.categories} className="w-full shrink-0 self-start rounded-[14px] bg-tint p-2 lg:sticky lg:top-24 lg:max-h-[calc(100dvh-7rem)] lg:w-[316px] lg:overflow-y-auto lg:overscroll-contain [scrollbar-width:thin]">
       <h2 className="px-2 pt-2 pb-3 text-small font-bold">{m.catalog.categories}</h2>
       <div className="flex flex-col gap-4">
         {groups(roots).map(({ root, items, heading }) => (
@@ -51,7 +51,7 @@ export function CategoryBrowser({ roots, locale, active, basePath }: { roots: Ca
                           <CategoryArt name={c.name} size="sm" />
                         )}
                       </span>
-                      <span className={`min-w-0 flex-1 text-small leading-tight font-medium uppercase ${current ? "text-action" : ""}`}>{c.name}</span>
+                      <span className={`min-w-0 flex-1 text-small leading-tight font-medium uppercase ${current ? "text-link" : ""}`}>{c.name}</span>
                       <ChevronRight aria-hidden className="size-4 shrink-0 text-ink-2 transition-transform duration-150 group-hover:translate-x-0.5" />
                     </Link>
                   </li>

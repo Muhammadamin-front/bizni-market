@@ -27,7 +27,7 @@ export function ThemeToggle() {
   };
   const Icon = dark ? Moon : Sun;
   return (
-    <button type="button" onClick={toggle} aria-label={messages.theme.label} aria-pressed={dark} className="inline-flex h-8 items-center gap-2 rounded-control px-2 text-small font-medium hover:bg-black/5">
+    <button type="button" onClick={toggle} aria-label={messages.theme.label} aria-pressed={dark} className="inline-flex h-8 items-center gap-2 rounded-control px-2 text-small font-medium hover:bg-ink/10">
       <Icon aria-hidden className="size-4" />
       {dark ? messages.theme.night : messages.theme.day}
     </button>

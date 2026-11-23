@@ -290,7 +290,7 @@ function Photos({
               src={l.url}
               main={saved.length === 0 && i === 0}
               busy={l.state === "uploading"}
-              badge={l.state === "queued" ? <span className="absolute right-1 bottom-1 rounded-full bg-ink/80 px-2 py-0.5 text-caption text-white">{t("сохранится с товаром", "tovar bilan saqlanadi")}</span> : null}
+              badge={l.state === "queued" ? <span className="absolute right-1 bottom-1 rounded-full bg-ink/80 px-2 py-0.5 text-caption text-on-ink">{t("сохранится с товаром", "tovar bilan saqlanadi")}</span> : null}
               warn={l.state === "error" ? l.error : undefined}
             >
               {l.state === "queued" ? (
@@ -513,7 +513,7 @@ export function ProductForm({ initial }: { initial?: AdminProductDetail }) {
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <Link href="/admin/products" className="text-small text-action hover:underline">{t("← Все товары", "← Barcha tovarlar")}</Link>
+          <Link href="/admin/products" className="text-small text-link hover:underline">{t("← Все товары", "← Barcha tovarlar")}</Link>
           <h1 className="text-title font-bold">{isNew && !detail ? t("Новый товар", "Yangi tovar") : form.name || t("Товар", "Tovar")}</h1>
         </div>
         {detail && !isNew ? (
@@ -655,7 +655,7 @@ export function MoyskladProductView({ detail, onChanged }: { detail: AdminProduc
   const [busy, setBusy] = useState(false);
   return (
     <div className="flex max-w-4xl flex-col gap-4">
-      <Link href="/admin/products" className="text-small text-action hover:underline">{t("← Все товары", "← Barcha tovarlar")}</Link>
+      <Link href="/admin/products" className="text-small text-link hover:underline">{t("← Все товары", "← Barcha tovarlar")}</Link>
       <h1 className="text-title font-bold">{detail.name}</h1>
       <Notice tone="ok">{t("Этот товар приходит из МойСклад: название, цена, остаток и фото меняются там и подтягиваются сюда автоматически. Здесь его можно только скрыть с витрины.", "Bu tovar MoySklad'dan keladi: nomi, narxi, qoldigʻi va rasmlari oʻsha yerda oʻzgartiriladi va bu yerga avtomatik tortiladi. Bu yerda uni faqat saytdan yashirish mumkin.")}</Notice>
       <Card>
