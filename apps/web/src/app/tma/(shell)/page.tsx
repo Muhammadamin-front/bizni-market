@@ -2,8 +2,8 @@
 
 import type { HomePayload } from "@shop/shared";
 import { Skeleton } from "@shop/ui";
-import { Package } from "lucide-react";
 import Link from "next/link";
+import { CategoryArt } from "@/components/CategoryArt";
 import { ProductTile } from "@/components/ProductTile";
 import { useI18n } from "@/lib/i18n";
 import { useFetch } from "@/lib/use-fetch";
@@ -40,7 +40,7 @@ export default function TmaHome() {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={r.imageUrl ?? r.covers[0]} alt="" loading="lazy" className="size-full object-cover" />
                   ) : (
-                    <Package aria-hidden className="size-9 text-[#c9c6bf]" strokeWidth={1.25} />
+                    <CategoryArt name={r.name} size="md" />
                   )}
                 </span>
                 <span className="flex flex-1 flex-col gap-0.5 p-2.5">
@@ -57,12 +57,12 @@ export default function TmaHome() {
               <li key={c.id}>
                 <Link href={`${href("/catalog")}?category=${c.slug}`} className="flex h-full items-center gap-2.5 overflow-hidden rounded-card border border-line bg-card p-2 pr-3 text-small font-medium active:bg-sunken">
                   {/* The category's own product photo (Telegram dark theme keeps photos on white, like product cards). */}
-                  <span className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-control bg-white">
+                  <span className="relative flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-control bg-white">
                     {c.imageUrl || c.covers[0] ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={c.imageUrl ?? c.covers[0]} alt="" loading="lazy" className="size-full object-cover" />
                     ) : (
-                      <Package aria-hidden className="size-5 text-[#c9c6bf]" strokeWidth={1.5} />
+                      <CategoryArt name={c.name} size="sm" />
                     )}
                   </span>
                   <span className="min-w-0 flex-1 leading-tight">{c.name}</span>
