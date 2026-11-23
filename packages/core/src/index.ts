@@ -8,6 +8,7 @@ export * from "./notify";
 export * from "./queues";
 export * from "./runtime";
 export * from "./settings";
+export * from "./stats";
 export * from "./telegram";
 export * from "./texts";
 export * from "./sync/catalog";

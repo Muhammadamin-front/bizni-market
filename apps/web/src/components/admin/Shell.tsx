@@ -11,6 +11,7 @@ import { btnPrimary, Field, input, Notice } from "./ui";
 const NAV: { href: string; label: L; moysklad?: boolean }[] = [
   { href: "/admin", label: { ru: "Обзор", uz: "Umumiy holat" } },
   { href: "/admin/orders", label: { ru: "Заказы", uz: "Buyurtmalar" } },
+  { href: "/admin/stats", label: { ru: "Статистика", uz: "Statistika" } },
   { href: "/admin/products", label: { ru: "Товары", uz: "Tovarlar" } },
   { href: "/admin/categories", label: { ru: "Категории", uz: "Kategoriyalar" } },
   { href: "/admin/content", label: { ru: "Контент", uz: "Sayt matnlari" } },

@@ -3,9 +3,9 @@
 import { isLocalOrderStatus, LOCAL_ORDER_STATUS_INFO } from "@shop/shared";
 import Link from "next/link";
 import { useState } from "react";
-import { fmtDate, fmtMoney, useAdminData } from "@/components/admin/api";
+import { adminFetch, fmtDate, fmtMoney, useAdminData } from "@/components/admin/api";
 import { useT, type L } from "@/components/admin/i18n";
-import { Badge, Card, Table, btn, input } from "@/components/admin/ui";
+import { Badge, Card, Notice, Table, btn, btnPrimary, input } from "@/components/admin/ui";
 
 interface Row {
   id: string;
@@ -45,12 +45,25 @@ export default function OrdersPage() {
   const [q, setQ] = useState("");
   const [sync, setSync] = useState(() => (typeof window === "undefined" ? "all" : (new URLSearchParams(window.location.search).get("sync") ?? "all")));
   const [page, setPage] = useState(1);
-  const { data, loading } = useAdminData<{ rows: Row[]; total: number; pageSize: number }>(`/orders?page=${page}&sync=${sync}${q ? `&q=${encodeURIComponent(q)}` : ""}`);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const { data, loading, reload } = useAdminData<{ rows: Row[]; total: number; pageSize: number }>(`/orders?page=${page}&sync=${sync}${q ? `&q=${encodeURIComponent(q)}` : ""}`);
+  // Confirm = the order counts as sold (money in the statistics); cancel = the stock of manual products comes back.
+  const setStatus = async (o: Row, status: "confirmed" | "cancelled") => {
+    if (status === "cancelled" && !window.confirm(t(`Отменить заказ ${o.number}? Остаток вернётся на склад.`, `${o.number} buyurtma bekor qilinsinmi? Qoldiq omborga qaytadi.`))) return;
+    setBusyId(o.id);
+    setError(null);
+    const r = await adminFetch(`/orders/${o.id}/local-status`, { body: { status } });
+    setBusyId(null);
+    if (!r.ok) setError((r.data as { message?: string; error?: string })?.message ?? t("Ошибка", "Xato"));
+    reload();
+  };
   const pages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
 
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-title font-bold">{t("Заказы", "Buyurtmalar")}</h1>
+      {error ? <Notice tone="bad">{error}</Notice> : null}
       <Card>
         <div className="mb-3 flex flex-wrap gap-2">
           <input className={`${input} max-w-xs`} placeholder={t("Номер, имя или телефон", "Raqam, ism yoki telefon")} value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} aria-label={t("Поиск заказов", "Buyurtma qidirish")} />
@@ -63,7 +76,7 @@ export default function OrdersPage() {
           </select>
         </div>
         {loading && !data ? <p className="text-ink-2">{t("Загрузка…", "Yuklanmoqda…")}</p> : (
-          <Table head={["№", t("Дата", "Sana"), t("Клиент", "Mijoz"), t("Сумма", "Summa"), t("Канал", "Kanal"), t("Статус", "Holat"), t("Где ведётся", "Qayerda yuritiladi")]}>
+          <Table head={["№", t("Дата", "Sana"), t("Клиент", "Mijoz"), t("Сумма", "Summa"), t("Канал", "Kanal"), t("Статус", "Holat"), t("Где ведётся", "Qayerda yuritiladi"), t("Действие", "Amal")]}>
             {data?.rows.map((o) => (
               <tr key={o.id}>
                 <td><Link href={`/admin/orders/${o.id}`} className="font-semibold text-action hover:underline">{o.number}</Link></td>
@@ -73,6 +86,14 @@ export default function OrdersPage() {
                 <td>{o.channel === "tma" ? "Telegram" : t("Сайт", "Sayt")}</td>
                 <td><StatusBadge o={o} /></td>
                 <td><Badge tone={o.syncStatus === "synced" || o.syncStatus === "local" ? "neutral" : o.syncStatus === "failed" ? "bad" : "warn"}>{SYNC_LABEL[o.syncStatus]?.[t.lang] ?? o.syncStatus}</Badge>{o.lastError ? <p className="mt-1 max-w-xs text-caption text-promo">{o.lastError}</p> : null}</td>
+                <td className="whitespace-nowrap">
+                  {o.syncStatus === "local" && (o.localStatus === "new" || o.localStatus === "confirmed" || o.localStatus === "delivering" || o.localStatus === "ready") ? (
+                    <span className="flex gap-1">
+                      {o.localStatus === "new" ? <button className={btnPrimary} disabled={busyId === o.id} onClick={() => void setStatus(o, "confirmed")}>{t("Подтвердить", "Tasdiqlash")}</button> : null}
+                      <button className={btn} disabled={busyId === o.id} onClick={() => void setStatus(o, "cancelled")}>{t("Отменить", "Bekor qilish")}</button>
+                    </span>
+                  ) : null}
+                </td>
               </tr>
             ))}
           </Table>

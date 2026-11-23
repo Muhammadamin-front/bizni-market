@@ -6,7 +6,7 @@ import {
   AuthError, audit, autoConfigure, enqueueSync, generateTotpSecret, getOrderStates, hashPassword, loadAccountOptions, loadSettings, loginAdmin, logoutAdmin, passwordProblem,
   BOT_DESCRIPTION_MAX, BOT_SHORT_DESCRIPTION_MAX, contentMap, processImage, productsByIds, pushOrderState, retryOrderPush, saveSettings, setupTelegram, stockSummary, TelegramApi, toOrderView, totpUri, verifyPassword, verifyTotp, clearCatalogCache,
   addProductImage, createManualCategory, createManualProduct, deleteManualCategory, deleteManualProduct, deleteProductImage, getAdminProduct, listAdminCategories, mediaUrl,
-  quickEditProduct, reorderProductImages, revalidateWeb, setCategoryImage, setLocalOrderStatus, updateCategory, updateManualProduct,
+  quickEditProduct, reorderProductImages, revalidateWeb, setCategoryImage, salesStats, setLocalOrderStatus, updateCategory, updateManualProduct,
   type Runtime, type SyncJobName,
 } from "@shop/core";
 import { IntegrationSettingsSchema, LOCAL_ORDER_STATUSES, ManualCategoryInput, ManualProductInput, normalizeSearch, ProductQuickEdit } from "@shop/shared";
@@ -417,6 +417,12 @@ export function adminRoutes(app: FastifyInstance, rt: Runtime) {
     clearCatalogCache();
     await audit(rt, req.admin!.adminId, "category_i18n", "category", id);
     return { ok: true };
+  });
+
+  // ------------------------------------------------------------------------------------------ statistics
+  app.get("/v1/admin/stats", { preHandler: guard }, async (req) => {
+    const { days } = z.object({ days: z.coerce.number().int().min(1).max(365).default(30) }).parse(req.query);
+    return salesStats(rt, days);
   });
 
   // ------------------------------------------------------------------------------------------ orders
