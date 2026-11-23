@@ -15,7 +15,7 @@ export const ru: Messages = {
   catalog: {
     all: "Все",
     stationery: "Канцелярия",
-    grocery: "Электроника и компьютеры",
+    grocery: "Компьютеры и услуги",
     categories: "Категории",
     brands: "Бренды",
     filters: "Фильтры",
@@ -56,7 +56,7 @@ export const ru: Messages = {
     close: "Закрыть",
   },
   home: {
-    heroTitle: "Канцелярия, электроника и компьютеры в одной корзине",
+    heroTitle: "Компьютеры, компьютерные услуги и канцелярия",
     heroBody: "Цены и наличие всегда актуальны: видно только то, что есть на полке.",
     categories: "Категории",
     brands: "Бренды",

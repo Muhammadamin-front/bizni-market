@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { adminFetch } from "./api";
+import { useShopName } from "./brand";
 import { LangSwitch, useT, type L } from "./i18n";
 import { btnPrimary, Field, input, Notice } from "./ui";
 
@@ -20,6 +21,7 @@ const NAV: { href: string; label: L; moysklad?: boolean }[] = [
 
 export function AdminShell({ children }: { children: ReactNode }) {
   const t = useT();
+  const shopName = useShopName();
   const [me, setMe] = useState<{ email: string; connected?: boolean } | null | undefined>(undefined);
   const pathname = usePathname();
 
@@ -44,7 +46,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         <div className="flex items-center justify-between gap-3 px-4 py-3 lg:block">
           <div className="min-w-0">
             <p className="text-lead font-bold">
-              Kanso{" "}
+              {shopName}{" "}
               <span className="whitespace-nowrap font-medium text-ink-2 lg:block">
                 <span className="lg:hidden">· </span>
                 {t("админ", "admin")}
@@ -82,6 +84,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
 function Login({ onDone }: { onDone: () => void }) {
   const t = useT();
+  const shopName = useShopName();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [totp, setTotp] = useState("");
@@ -100,7 +103,7 @@ function Login({ onDone }: { onDone: () => void }) {
     <div className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-4 p-6">
       <LangSwitch className="self-end" />
       <div>
-        <p className="text-small font-semibold text-ink-2">Kanso</p>
+        <p className="text-small font-semibold text-ink-2">{shopName}</p>
         <h1 className="text-title font-bold">{t("Вход в админку", "Admin panelga kirish")}</h1>
       </div>
       <form

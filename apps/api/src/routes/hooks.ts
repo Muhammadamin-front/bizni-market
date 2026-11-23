@@ -1,5 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
-import { recordWebhook, TelegramApi, texts, type Runtime } from "@shop/core";
+import { contentMap, recordWebhook, TelegramApi, texts, type Runtime } from "@shop/core";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 
@@ -51,8 +51,11 @@ function hookRoutesAt(app: FastifyInstance, rt: Runtime, prefix: string) {
     if (message?.text?.startsWith("/start")) {
       const locale = message.from?.language_code?.startsWith("ru") ? "ru" : "uz";
       const bot = new TelegramApi(rt.env.TELEGRAM_BOT_TOKEN);
+      // The owner's welcome text (admin → Sayt matnlari → Telegram bot), else the built-in one.
+      const own = await contentMap(rt).then((c) => c["bot.welcome"]).catch(() => undefined);
+      const welcome = (own?.[locale] || own?.[locale === "uz" ? "ru" : "uz"] || "").trim() || texts.start(locale);
       void bot
-        .sendMessage(message.chat.id, texts.start(locale), {
+        .sendMessage(message.chat.id, welcome, {
           reply_markup: { inline_keyboard: [[{ text: texts.openShop(locale), web_app: { url: `${rt.env.PUBLIC_URL.replace(/\/$/, "")}/tma` } }]] },
         })
         .catch(() => undefined);

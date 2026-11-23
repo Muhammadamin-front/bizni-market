@@ -4,7 +4,7 @@ import {
 } from "@shop/db";
 import {
   AuthError, audit, autoConfigure, enqueueSync, generateTotpSecret, getOrderStates, hashPassword, loadAccountOptions, loadSettings, loginAdmin, logoutAdmin, passwordProblem,
-  processImage, productsByIds, pushOrderState, retryOrderPush, saveSettings, setupTelegram, stockSummary, TelegramApi, toOrderView, totpUri, verifyPassword, verifyTotp, clearCatalogCache,
+  BOT_DESCRIPTION_MAX, BOT_SHORT_DESCRIPTION_MAX, contentMap, processImage, productsByIds, pushOrderState, retryOrderPush, saveSettings, setupTelegram, stockSummary, TelegramApi, toOrderView, totpUri, verifyPassword, verifyTotp, clearCatalogCache,
   addProductImage, createManualCategory, createManualProduct, deleteManualCategory, deleteManualProduct, deleteProductImage, getAdminProduct, listAdminCategories, mediaUrl,
   quickEditProduct, reorderProductImages, revalidateWeb, setLocalOrderStatus, updateCategory, updateManualProduct,
   type Runtime, type SyncJobName,
@@ -354,9 +354,12 @@ export function adminRoutes(app: FastifyInstance, rt: Runtime) {
   app.get("/v1/admin/content", { preHandler: guard }, async () => rt.db.select().from(contentBlocks).orderBy(contentBlocks.key));
   app.put("/v1/admin/content/:key", { preHandler: guard }, async (req) => {
     const key = z.string().regex(/^[a-z0-9._-]{1,80}$/).parse((req.params as { key: string }).key);
-    const body = z.object({ uz: z.string().max(20_000).default(""), ru: z.string().max(20_000).default("") }).parse(req.body);
+    const max = key === "bot.description" ? BOT_DESCRIPTION_MAX : key === "bot.shortDescription" ? BOT_SHORT_DESCRIPTION_MAX : key === "bot.welcome" ? 4000 : key.startsWith("page.") ? 20_000 : 2000;
+    const body = z.object({ uz: z.string().trim().max(max).default(""), ru: z.string().trim().max(max).default("") }).parse(req.body);
     await rt.db.insert(contentBlocks).values({ key, ...body }).onConflictDoUpdate({ target: contentBlocks.key, set: { ...body, updatedAt: new Date() } });
     await audit(rt, req.admin!.adminId, "content_update", "content", key);
+    // Shop name, home texts and contacts show on every page: expire the cached pages now, not in 30 s.
+    await revalidateWeb(rt, ["config", "catalog"], { immediate: true });
     return { ok: true };
   });
 
@@ -472,7 +475,13 @@ export function adminRoutes(app: FastifyInstance, rt: Runtime) {
     return { enabled: true, publicUrl: rt.env.PUBLIC_URL, https: rt.env.PUBLIC_URL.startsWith("https://"), me: me.result ?? null, webhook: hook.result ?? null, error: me.ok ? null : me.description };
   });
   app.post("/v1/admin/telegram/setup", { preHandler: guard }, async (req) => {
-    const report = await setupTelegram({ token: rt.env.TELEGRAM_BOT_TOKEN, publicUrl: rt.env.PUBLIC_URL, webhookSecret: rt.env.TELEGRAM_WEBHOOK_SECRET });
+    const c = await contentMap(rt);
+    const report = await setupTelegram({
+      token: rt.env.TELEGRAM_BOT_TOKEN,
+      publicUrl: rt.env.PUBLIC_URL,
+      webhookSecret: rt.env.TELEGRAM_WEBHOOK_SECRET,
+      texts: { description: c["bot.description"], shortDescription: c["bot.shortDescription"] },
+    });
     await audit(rt, req.admin!.adminId, "telegram_setup", "telegram", null, { ok: report.ok });
     return report;
   });

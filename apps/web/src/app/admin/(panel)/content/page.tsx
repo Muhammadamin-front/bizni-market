@@ -10,15 +10,30 @@ import { Card, Field, Notice, Table, btn, btnPrimary, input } from "@/components
 interface Block { key: string; uz: string; ru: string }
 interface Banner { id: string; locale: string | null; title: string; subtitle: string; imageKey: string | null; linkUrl: string; position: number; active: boolean }
 
-const BLOCKS: [string, L][] = [
-  ["footer.phone", { ru: "Телефон", uz: "Telefon" }],
-  ["footer.address", { ru: "Адрес", uz: "Manzil" }],
-  ["footer.hours", { ru: "Часы работы", uz: "Ish vaqti" }],
-  ["footer.email", { ru: "Почта", uz: "Email" }],
-  ["page.about", { ru: "Страница «О нас»", uz: "«Biz haqimizda» sahifasi" }],
-  ["page.delivery", { ru: "Страница «Доставка»", uz: "«Yetkazib berish» sahifasi" }],
-  ["page.offer", { ru: "Публичная оферта", uz: "Ommaviy oferta" }],
-  ["page.privacy", { ru: "Политика конфиденциальности", uz: "Maxfiylik siyosati" }],
+/** One editable text. Empty = the built-in default (shown greyed as the placeholder). */
+interface BlockDef { key: string; label: L; kind?: "line" | "text"; max?: number; placeholder?: L; hint?: L }
+
+const SHOP_BLOCKS: BlockDef[] = [
+  { key: "brand.name", label: { ru: "Название магазина", uz: "Doʻkon nomi" }, max: 60, placeholder: { ru: "Kanso", uz: "Kanso" }, hint: { ru: "В шапке сайта, в подвале, во вкладке браузера, в админке.", uz: "Sayt tepasida, pastida, brauzer yorligʻida va admin panelda." } },
+  { key: "home.heroTitle", label: { ru: "Заголовок главной страницы", uz: "Bosh sahifa sarlavhasi" }, max: 120, placeholder: { ru: "Компьютеры, компьютерные услуги и канцелярия", uz: "Kompyuterlar, kompyuter xizmatlari va kanselyariya" }, hint: { ru: "Виден, когда нет баннеров с картинкой; всегда используется для поисковиков.", uz: "Rasmli banner boʻlmaganda koʻrinadi; qidiruv tizimlari uchun doim ishlatiladi." } },
+  { key: "home.heroBody", label: { ru: "Текст под заголовком (и описание для поисковиков)", uz: "Sarlavha ostidagi matn (qidiruv tizimlari uchun tavsif ham)" }, kind: "text", max: 300, placeholder: { ru: "Цены и наличие всегда актуальны: видно только то, что есть на полке.", uz: "Narx va qoldiq doimo joriy: omborda bor narsagina koʻrinadi." } },
+];
+
+const BOT_BLOCKS: BlockDef[] = [
+  { key: "bot.welcome", label: { ru: "Приветствие на /start", uz: "/start xabari" }, kind: "text", max: 4000, placeholder: { ru: "Добро пожаловать! Откройте магазин кнопкой ниже: компьютеры, компьютерные услуги и канцелярия с актуальными ценами и наличием.", uz: "Xush kelibsiz! Doʻkonni pastdagi tugma orqali oching: kompyuterlar, kompyuter xizmatlari va kanselyariya, joriy narx va qoldiq bilan." }, hint: { ru: "Действует сразу.", uz: "Darhol ishlaydi." } },
+  { key: "bot.description", label: { ru: "Описание бота (экран до /start)", uz: "Bot tavsifi (/start dan oldingi ekran)" }, kind: "text", max: 512, placeholder: { ru: "Компьютеры, компьютерные услуги и канцелярия с актуальными ценами и наличием. Оформите заказ.", uz: "Kompyuterlar, kompyuter xizmatlari va kanselyariya: joriy narx va qoldiq bilan. Buyurtma bering." }, hint: { ru: "После сохранения: Система → «Настроить бота».", uz: "Saqlagach: Tizim → «Botni sozlash»." } },
+  { key: "bot.shortDescription", label: { ru: "Короткое описание (профиль бота)", uz: "Qisqa tavsif (bot profili)" }, max: 120, placeholder: { ru: "Компьютеры и компьютерные услуги", uz: "Kompyuterlar va kompyuter xizmatlari" }, hint: { ru: "После сохранения: Система → «Настроить бота».", uz: "Saqlagach: Tizim → «Botni sozlash»." } },
+];
+
+const CONTACT_BLOCKS: BlockDef[] = [
+  { key: "footer.phone", label: { ru: "Телефон", uz: "Telefon" } },
+  { key: "footer.address", label: { ru: "Адрес", uz: "Manzil" } },
+  { key: "footer.hours", label: { ru: "Часы работы", uz: "Ish vaqti" } },
+  { key: "footer.email", label: { ru: "Почта", uz: "Email" } },
+  { key: "page.about", label: { ru: "Страница «О нас»", uz: "«Biz haqimizda» sahifasi" }, kind: "text" },
+  { key: "page.delivery", label: { ru: "Страница «Доставка»", uz: "«Yetkazib berish» sahifasi" }, kind: "text" },
+  { key: "page.offer", label: { ru: "Публичная оферта", uz: "Ommaviy oferta" }, kind: "text" },
+  { key: "page.privacy", label: { ru: "Политика конфиденциальности", uz: "Maxfiylik siyosati" }, kind: "text" },
 ];
 
 export default function ContentPage() {
@@ -26,36 +41,65 @@ export default function ContentPage() {
   return (
     <div className="flex max-w-4xl flex-col gap-4">
       <h1 className="text-title font-bold">{t("Контент витрины", "Sayt matnlari")}</h1>
-      <Notice tone="ok">{t("Контакты, страницы и баннеры. Пустые блоки на сайте не показываются: ничего не придумывается.", "Kontaktlar, sahifalar va bannerlar. Boʻsh bloklar saytda koʻrsatilmaydi: hech narsa oʻylab topilmaydi.")}</Notice>
-      <Blocks />
+      <Notice tone="ok">{t("Всё, что видят покупатели на сайте и в Telegram. Пустое поле = текст по умолчанию (показан серым). Пустые контакты и страницы на сайте не показываются.", "Xaridorlar saytda va Telegram'da koʻradigan hamma narsa. Boʻsh maydon = standart matn (kulrang koʻrinadi). Boʻsh kontaktlar va sahifalar saytda koʻrsatilmaydi.")}</Notice>
+      <Blocks title={t("Магазин и главная страница", "Doʻkon va bosh sahifa")} defs={SHOP_BLOCKS} />
+      <Blocks title={t("Telegram-бот", "Telegram bot")} defs={BOT_BLOCKS} />
+      <Blocks title={t("Контакты и страницы", "Kontaktlar va sahifalar")} defs={CONTACT_BLOCKS} />
       <Banners />
       <Categories />
     </div>
   );
 }
 
-function Blocks() {
+function Blocks({ title, defs }: { title: string; defs: BlockDef[] }) {
   const t = useT();
   const { data, reload } = useAdminData<Block[]>("/content");
   const [draft, setDraft] = useState<Record<string, { uz: string; ru: string }>>({});
-  const [saved, setSaved] = useState("");
+  const [msg, setMsg] = useState<{ tone: "ok" | "bad"; text: string } | null>(null);
   const get = (k: string) => draft[k] ?? { uz: data?.find((b) => b.key === k)?.uz ?? "", ru: data?.find((b) => b.key === k)?.ru ?? "" };
   return (
-    <Card title={t("Контакты и страницы", "Kontaktlar va sahifalar")}>
-      {saved ? <Notice tone="ok">{t("Сохранено:", "Saqlandi:")} {BLOCKS.find(([k]) => k === saved)?.[1][t.lang]}</Notice> : null}
+    <Card title={title}>
+      {msg ? <Notice tone={msg.tone}>{msg.text}</Notice> : null}
       <div className="mt-2 flex flex-col gap-5">
-        {BLOCKS.map(([key, label]) => {
-          const long = key.startsWith("page.");
-          const v = get(key);
+        {defs.map((d) => {
+          const v = get(d.key);
           return (
-            <div key={key} className="grid gap-2 md:grid-cols-2">
-              <p className="text-small font-semibold md:col-span-2">{label[t.lang]} <span className="font-mono text-caption text-ink-2">{key}</span></p>
-              {(["uz", "ru"] as const).map((l) => (
-                <Field key={l} label={l === "uz" ? t("Узбекский", "Oʻzbekcha") : t("Русский", "Ruscha")}>
-                  {long ? <textarea className="min-h-24 rounded-control border border-line bg-card p-2 text-small" value={v[l]} onChange={(e) => setDraft({ ...draft, [key]: { ...v, [l]: e.target.value } })} /> : <input className={input} value={v[l]} onChange={(e) => setDraft({ ...draft, [key]: { ...v, [l]: e.target.value } })} />}
-                </Field>
-              ))}
-              <div className="md:col-span-2"><button className={btn} onClick={async () => { await adminFetch(`/content/${key}`, { method: "PUT", body: get(key) }); setSaved(key); reload(); }}>{t("Сохранить", "Saqlash")}</button></div>
+            <div key={d.key} className="grid gap-2 md:grid-cols-2">
+              <div className="md:col-span-2">
+                <p className="text-small font-semibold">{d.label[t.lang]}</p>
+                {d.hint ? <p className="text-caption text-ink-2">{d.hint[t.lang]}</p> : null}
+              </div>
+              {(["uz", "ru"] as const).map((l) => {
+                const common = {
+                  value: v[l],
+                  maxLength: d.max,
+                  placeholder: d.placeholder?.[l === "uz" ? "uz" : "ru"],
+                  onChange: (e: { target: { value: string } }) => setDraft({ ...draft, [d.key]: { ...v, [l]: e.target.value } }),
+                };
+                return (
+                  <Field key={l} label={l === "uz" ? t("Узбекский", "Oʻzbekcha") : t("Русский", "Ruscha")}>
+                    {d.kind === "text" ? <textarea className="min-h-24 rounded-control border border-line bg-card p-2 text-small" {...common} /> : <input className={input} {...common} />}
+                  </Field>
+                );
+              })}
+              <div className="flex items-center gap-2 md:col-span-2">
+                <button
+                  className={btn}
+                  onClick={async () => {
+                    const r = await adminFetch(`/content/${d.key}`, { method: "PUT", body: get(d.key) });
+                    setMsg(r.ok ? { tone: "ok", text: `${t("Сохранено:", "Saqlandi:")} ${d.label[t.lang]}` } : { tone: "bad", text: t("Не сохранено: слишком длинный текст?", "Saqlanmadi: matn juda uzunmi?") });
+                    if (r.ok) {
+                      const { [d.key]: _done, ...rest } = draft;
+                      void _done;
+                      setDraft(rest);
+                      reload();
+                    }
+                  }}
+                >
+                  {t("Сохранить", "Saqlash")}
+                </button>
+                {d.max ? <span className="text-caption text-ink-2">{t(`до ${d.max} знаков`, `${d.max} belgigacha`)}</span> : null}
+              </div>
             </div>
           );
         })}

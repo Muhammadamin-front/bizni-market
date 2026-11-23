@@ -1,10 +1,10 @@
 import type { Locale, PublicConfig } from "@shop/shared";
-import { getMessages } from "@shop/shared";
+import { getMessagesWithContent } from "@shop/shared";
 import Link from "next/link";
 
 /** The footer only shows what the owner has entered in the admin (contacts, hours, delivery text). Nothing here is invented. */
 export function Footer({ locale, content, botUsername }: { locale: Locale; content: PublicConfig["content"]; botUsername: string | null }) {
-  const m = getMessages(locale);
+  const m = getMessagesWithContent(locale, content);
   const text = (key: string) => content[key]?.[locale] || content[key]?.uz || "";
   const contacts = ["footer.phone", "footer.address", "footer.hours", "footer.email"].map(text).filter(Boolean);
   const pages = [

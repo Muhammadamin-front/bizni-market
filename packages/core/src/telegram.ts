@@ -62,7 +62,25 @@ export interface TelegramSetupReport {
  * One-time (idempotent) bot setup, run when the token and the public https domain exist: webhook, menu button, commands, descriptions in uz and ru.
  * Used by `pnpm telegram:setup` and by the admin "Set up bot" button.
  */
-export async function setupTelegram(opts: { token: string; publicUrl: string; webhookSecret: string }): Promise<TelegramSetupReport> {
+/** Telegram's own limits for the bot description texts. */
+export const BOT_DESCRIPTION_MAX = 512;
+export const BOT_SHORT_DESCRIPTION_MAX = 120;
+
+/** Built-in bot descriptions, used when the owner has not written their own in the admin (Sayt matnlari → Telegram bot). */
+export const DEFAULT_BOT_TEXTS = {
+  description: {
+    uz: "Kompyuterlar, kompyuter xizmatlari va kanselyariya: joriy narx va qoldiq bilan. Buyurtma bering.",
+    ru: "Компьютеры, компьютерные услуги и канцелярия с актуальными ценами и наличием. Оформите заказ.",
+  },
+  shortDescription: { uz: "Kompyuterlar va kompyuter xizmatlari", ru: "Компьютеры и компьютерные услуги" },
+};
+
+export interface BotTexts {
+  description?: { uz?: string; ru?: string };
+  shortDescription?: { uz?: string; ru?: string };
+}
+
+export async function setupTelegram(opts: { token: string; publicUrl: string; webhookSecret: string; texts?: BotTexts }): Promise<TelegramSetupReport> {
   const bot = new TelegramApi(opts.token);
   const steps: TelegramSetupReport["steps"] = [];
   const record = (step: string, r: TelegramResult) => steps.push({ step, ok: r.ok, detail: r.ok ? undefined : r.description });
@@ -78,9 +96,12 @@ export async function setupTelegram(opts: { token: string; publicUrl: string; we
   record("setMyCommands(uz)", await bot.setMyCommands([{ command: "start", description: "Do‘konni ochish" }], "uz"));
   record("setMyCommands(ru)", await bot.setMyCommands([{ command: "start", description: "Открыть магазин" }], "ru"));
   record("setMyCommands(default)", await bot.setMyCommands([{ command: "start", description: "Do‘konni ochish / Открыть магазин" }]));
-  record("setMyDescription(uz)", await bot.setMyDescription("Kanselyariya, elektronika va kompyuterlar: joriy narx va qoldiq bilan. Buyurtma bering.", "uz"));
-  record("setMyDescription(ru)", await bot.setMyDescription("Канцелярия, электроника и компьютеры с актуальными ценами и наличием. Оформите заказ.", "ru"));
-  record("setMyShortDescription(uz)", await bot.setMyShortDescription("Kanselyariya, elektronika va kompyuterlar", "uz"));
-  record("setMyShortDescription(ru)", await bot.setMyShortDescription("Канцелярия, электроника, компьютеры", "ru"));
+  const pick = (own: string | undefined, fallback: string, max: number) => (own?.trim() || fallback).slice(0, max);
+  const d = opts.texts?.description;
+  const sd = opts.texts?.shortDescription;
+  record("setMyDescription(uz)", await bot.setMyDescription(pick(d?.uz, DEFAULT_BOT_TEXTS.description.uz, BOT_DESCRIPTION_MAX), "uz"));
+  record("setMyDescription(ru)", await bot.setMyDescription(pick(d?.ru, DEFAULT_BOT_TEXTS.description.ru, BOT_DESCRIPTION_MAX), "ru"));
+  record("setMyShortDescription(uz)", await bot.setMyShortDescription(pick(sd?.uz, DEFAULT_BOT_TEXTS.shortDescription.uz, BOT_SHORT_DESCRIPTION_MAX), "uz"));
+  record("setMyShortDescription(ru)", await bot.setMyShortDescription(pick(sd?.ru, DEFAULT_BOT_TEXTS.shortDescription.ru, BOT_SHORT_DESCRIPTION_MAX), "ru"));
   return { ok: steps.every((s) => s.ok), steps };
 }

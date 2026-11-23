@@ -1,4 +1,4 @@
-import { getMessages, isLocale } from "@shop/shared";
+import { getMessagesWithContent, isLocale } from "@shop/shared";
 import { EmptyState } from "@shop/ui";
 import { PackageOpen } from "lucide-react";
 import Link from "next/link";
@@ -6,15 +6,15 @@ import { notFound } from "next/navigation";
 import { CategoryTiles } from "@/components/site/CategoryTiles";
 import { HeroCoverflow } from "@/components/site/HeroCoverflow";
 import { Rail } from "@/components/site/Rail";
-import { getHome } from "@/lib/server-api";
+import { getConfig, getHome } from "@/lib/server-api";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
-  const m = getMessages(locale);
-  const home = await getHome(locale);
+  const [home, config] = await Promise.all([getHome(locale), getConfig().catch(() => null)]);
+  const m = getMessagesWithContent(locale, config?.content);
   const empty = home.categories.length === 0 && home.brands.length === 0;
   if (empty) return <EmptyState icon={<PackageOpen className="size-7" strokeWidth={1.5} />} title={m.home.emptyTitle} body={m.home.emptyBody} />;
 

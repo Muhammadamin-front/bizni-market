@@ -8,7 +8,7 @@ import { fontClass } from "@/lib/fonts";
 import { I18nProvider } from "@/lib/i18n";
 import { getConfig } from "@/lib/server-api";
 import { ToastProvider } from "@/lib/toast";
-import { getMessages } from "@shop/shared";
+import { getMessagesWithContent } from "@shop/shared";
 import "../../globals.css";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +21,8 @@ export const viewport: Viewport = { width: "device-width", initialScale: 1, view
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
-  const m = getMessages(isLocale(locale) ? locale : "uz");
+  const config = await getConfig().catch(() => null);
+  const m = getMessagesWithContent(isLocale(locale) ? locale : "uz", config?.content);
   const origin = process.env.PUBLIC_URL ?? "http://localhost:3000";
   return {
     metadataBase: new URL(origin),
@@ -37,12 +38,12 @@ export default async function SiteLayout({ children, params }: { children: React
   if (!isLocale(raw)) notFound();
   const locale: Locale = raw;
   const config = await getConfig().catch(() => null);
-  const m = getMessages(locale);
+  const m = getMessagesWithContent(locale, config?.content);
 
   return (
     <html lang={locale} className={fontClass}>
       <body>
-        <I18nProvider locale={locale} prefix={`/${locale}`}>
+        <I18nProvider locale={locale} prefix={`/${locale}`} content={config?.content}>
           <ToastProvider>
             {config?.demo ? <p className="bg-ink px-4 py-1.5 text-center text-caption text-white">{m.home.demoBanner}</p> : null}
             <Suspense>

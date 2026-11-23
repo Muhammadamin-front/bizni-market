@@ -1,6 +1,6 @@
 "use client";
 
-import { getMessages, type Locale, type Messages } from "@shop/shared";
+import { getMessagesWithContent, type ContentMap, type Locale, type Messages } from "@shop/shared";
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 
 interface I18n {
@@ -12,8 +12,23 @@ interface I18n {
 
 const Ctx = createContext<I18n | null>(null);
 
-export function I18nProvider({ locale, prefix, children }: { locale: Locale; /** "" for the site (locale-first URLs), "/tma" for the Mini App. */ prefix: string; children: ReactNode }) {
-  const value = useMemo<I18n>(() => ({ locale, messages: getMessages(locale), href: (path) => `${prefix}${path === "/" ? "" : path}` || "/" }), [locale, prefix]);
+export function I18nProvider({
+  locale,
+  prefix,
+  content,
+  children,
+}: {
+  locale: Locale;
+  /** "" for the site (locale-first URLs), "/tma" for the Mini App. */
+  prefix: string;
+  /** The owner's texts from the admin (shop name, home texts); built-in defaults when absent. */
+  content?: ContentMap | null;
+  children: ReactNode;
+}) {
+  const value = useMemo<I18n>(
+    () => ({ locale, messages: getMessagesWithContent(locale, content), href: (path) => `${prefix}${path === "/" ? "" : path}` || "/" }),
+    [locale, prefix, content],
+  );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 

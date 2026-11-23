@@ -16,7 +16,7 @@ export const uz: Messages = {
   catalog: {
     all: "Hammasi",
     stationery: "Kanselyariya",
-    grocery: "Elektronika va kompyuterlar",
+    grocery: "Kompyuterlar va xizmatlar",
     categories: "Kategoriyalar",
     brands: "Brendlar",
     filters: "Filtrlar",
@@ -57,7 +57,7 @@ export const uz: Messages = {
     close: "Yopish",
   },
   home: {
-    heroTitle: "Kanselyariya, elektronika va kompyuterlar bir savatda",
+    heroTitle: "Kompyuterlar, kompyuter xizmatlari va kanselyariya",
     heroBody: "Narx va qoldiq doimo joriy: omborda bor narsagina koʻrinadi.",
     categories: "Kategoriyalar",
     brands: "Brendlar",
