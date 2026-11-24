@@ -7,9 +7,10 @@ import {
   BOT_DESCRIPTION_MAX, BOT_SHORT_DESCRIPTION_MAX, contentMap, processImage, productsByIds, pushOrderState, retryOrderPush, saveSettings, setupTelegram, stockSummary, TelegramApi, toOrderView, totpUri, verifyPassword, verifyTotp, clearCatalogCache,
   addProductImage, createManualCategory, createManualProduct, deleteManualCategory, deleteManualProduct, deleteProductImage, getAdminProduct, listAdminCategories, mediaUrl,
   quickEditProduct, reorderProductImages, revalidateWeb, setCategoryImage, salesStats, setLocalOrderStatus, updateCategory, updateManualProduct,
+  cancelledOrderWhere, deleteCancelledOrders,
   type Runtime, type SyncJobName,
 } from "@shop/core";
-import { HEX_COLOR, HOME_SECTIONS, IntegrationSettingsSchema, LOCAL_ORDER_STATUSES, ManualCategoryInput, ManualProductInput, normalizeSearch, ProductQuickEdit } from "@shop/shared";
+import { HEX_COLOR, HOME_SECTIONS, IntegrationSettingsSchema, isCancelledOrder, LOCAL_ORDER_STATUSES, ManualCategoryInput, ManualProductInput, normalizeSearch, ProductQuickEdit } from "@shop/shared";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { ADMIN_COOKIE, overLimit, recordHit, requireAdmin } from "../guards";
@@ -458,10 +459,12 @@ export function adminRoutes(app: FastifyInstance, rt: Runtime) {
   });
 
   // ------------------------------------------------------------------------------------------ orders
+  // sync=cancelled lists every cancelled order (admin status, pipeline status or MoySklad state), the ones that can be deleted.
   app.get("/v1/admin/orders", { preHandler: guard }, async (req) => {
     const q = Page.extend({ q: z.string().max(100).optional(), sync: z.enum(["all", "pending_sync", "synced", "failed", "cancelled", "local"]).default("all") }).parse(req.query);
     const where = [];
-    if (q.sync !== "all") where.push(eq(orders.syncStatus, q.sync));
+    if (q.sync === "cancelled") where.push(cancelledOrderWhere);
+    else if (q.sync !== "all") where.push(eq(orders.syncStatus, q.sync));
     if (q.q) {
       const like = `%${q.q.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
       where.push(or(ilike(orders.number, like), ilike(orders.contactPhone, like), ilike(orders.contactName, like))!);
@@ -469,12 +472,14 @@ export function adminRoutes(app: FastifyInstance, rt: Runtime) {
     const cond = where.length ? and(...where) : undefined;
     const rows = await rt.db.select().from(orders).where(cond).orderBy(desc(orders.createdAt)).limit(q.pageSize).offset((q.page - 1) * q.pageSize);
     const [{ n }] = (await rt.db.select({ n: count() }).from(orders).where(cond)) as [{ n: number }];
+    const [{ c }] = (await rt.db.select({ c: count() }).from(orders).where(cancelledOrderWhere)) as [{ c: number }];
     return {
       rows: rows.map((o) => ({
         id: o.id, number: o.number, channel: o.channel, syncStatus: o.syncStatus, msState: o.msState, msStateType: o.msStateType, localStatus: o.localStatus, total: o.total,
-        contactName: o.contactName, contactPhone: o.contactPhone, createdAt: o.createdAt, attempts: o.attempts, lastError: o.lastError,
+        contactName: o.contactName, contactPhone: o.contactPhone, createdAt: o.createdAt, attempts: o.attempts, lastError: o.lastError, cancelled: isCancelledOrder(o),
       })),
       total: Number(n),
+      cancelledTotal: Number(c),
       page: q.page,
       pageSize: q.pageSize,
     };
@@ -485,7 +490,28 @@ export function adminRoutes(app: FastifyInstance, rt: Runtime) {
     const [o] = await rt.db.select().from(orders).where(eq(orders.id, id)).limit(1);
     if (!o) return reply.code(404).send({ error: "not_found" });
     const items = await rt.db.select().from(orderItems).where(eq(orderItems.orderId, id));
-    return { ...toOrderView(o, items), msOrderId: o.msOrderId, msOrderName: o.msOrderName, attempts: o.attempts, lastError: o.lastError, telegramId: o.telegramId };
+    return { ...toOrderView(o, items), msOrderId: o.msOrderId, msOrderName: o.msOrderName, attempts: o.attempts, lastError: o.lastError, telegramId: o.telegramId, cancelled: isCancelledOrder(o) };
+  });
+
+  // Deleting for good is only for cancelled orders (their stock already came back); any other order answers 409.
+  app.delete("/v1/admin/orders/:id", { preHandler: guard }, async (req, reply) => {
+    const id = idParam(req);
+    const [number] = await deleteCancelledOrders(rt, [id]);
+    if (number === undefined) {
+      const [o] = await rt.db.select({ id: orders.id }).from(orders).where(eq(orders.id, id)).limit(1);
+      return o ? reply.code(409).send({ error: "not_cancelled" }) : reply.code(404).send({ error: "not_found" });
+    }
+    await audit(rt, req.admin!.adminId, "order_delete", "order", id, { number });
+    return reply.code(204).send();
+  });
+
+  /** Every cancelled order in one go. Other orders are never touched. */
+  app.post("/v1/admin/orders/delete-cancelled", { preHandler: guard }, async (req, reply) => {
+    const { confirm } = z.object({ confirm: z.string() }).parse(req.body);
+    if (confirm !== "DELETE") return reply.code(400).send({ error: "confirm_required" });
+    const numbers = await deleteCancelledOrders(rt);
+    await audit(rt, req.admin!.adminId, "order_delete_cancelled", "order", null, { count: numbers.length, numbers: numbers.slice(0, 500) });
+    return { deleted: numbers.length };
   });
 
   // The status lives in MoySklad: this writes THROUGH to it (and shows the error if MoySklad refuses), never a local-only status.

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { LOCAL_ORDER_STATUSES, LOCAL_ORDER_STATUS_INFO, type LocalOrderStatus } from "@shop/shared";
 import { use, useState } from "react";
 import { adminFetch, fmtDate, fmtMoney, useAdminData } from "@/components/admin/api";
@@ -12,6 +13,8 @@ interface Detail {
   deliveryMethod: string; address: string; comment: string; contactName: string; contactPhone: string; createdAt: string;
   items: { name: string; article: string; unit: string | null; unitPrice: number; quantity: number; lineTotal: number }[];
   msOrderId: string | null; msOrderName: string | null; attempts: number; lastError: string | null; telegramId: number | null;
+  /** Cancelled (any way): only such orders can be deleted for good. */
+  cancelled: boolean;
 }
 
 export default function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -21,6 +24,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   const { data: states } = useAdminData<{ id: string; name: string; stateType: string }[]>("/order-states");
   const [message, setMessage] = useState<{ tone: "ok" | "bad"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const router = useRouter();
   if (!o) return <p className="text-ink-2">{t("Загрузка…", "Yuklanmoqda…")}</p>;
 
   const act = async (fn: () => Promise<{ ok: boolean; data: unknown }>, okText: string) => {
@@ -32,6 +36,15 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     reload();
   };
   const statusWord = t("Статус", "Holat");
+  const remove = async () => {
+    if (!window.confirm(t(`Удалить отменённый заказ ${o.number} навсегда? Вернуть его будет нельзя.`, `Bekor qilingan ${o.number} buyurtma butunlay oʻchirilsinmi? Uni qaytarib boʻlmaydi.`))) return;
+    setBusy(true);
+    const r = await adminFetch(`/orders/${o.id}`, { method: "DELETE" });
+    setBusy(false);
+    if (r.ok) return router.push("/admin/orders");
+    setMessage({ tone: "bad", text: r.status === 409 ? t("Удалить можно только отменённый заказ.", "Faqat bekor qilingan buyurtmani oʻchirish mumkin.") : t("Не удалось удалить.", "Oʻchirib boʻlmadi.") });
+    reload();
+  };
 
   return (
     <div className="flex max-w-4xl flex-col gap-4">
@@ -107,6 +120,17 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
         </Table>
         <p className="mt-3 text-right text-lead font-bold">{fmtMoney(o.total, t.lang)}</p>
       </Card>
+      {o.cancelled ? (
+        <Card title={t("Удалить заказ", "Buyurtmani oʻchirish")}>
+          <p className="text-small text-ink-2">
+            {t(
+              "Заказ отменён. Его можно удалить навсегда: он исчезнет из списка, статистики и истории клиента. Остаток не изменится (он вернулся при отмене).",
+              "Buyurtma bekor qilingan. Uni butunlay oʻchirish mumkin: u roʻyxatdan, statistikadan va mijoz tarixidan yoʻqoladi. Qoldiq oʻzgarmaydi (u bekor qilinganda qaytgan).",
+            )}
+          </p>
+          <button className={`${btn} mt-3 border-promo text-promo`} disabled={busy} onClick={() => void remove()}>{t("Удалить навсегда", "Butunlay oʻchirish")}</button>
+        </Card>
+      ) : null}
     </div>
   );
 }

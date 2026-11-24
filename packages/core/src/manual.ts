@@ -6,6 +6,9 @@ import {
   categories,
   categoryI18n,
   eq,
+  inArray,
+  ne,
+  or,
   orderItems,
   orders,
   productImages,
@@ -452,3 +455,24 @@ export async function setLocalOrderStatus(rt: Runtime, orderId: string, status: 
   await queueNotification(rt, { kind: "order_status", chatId: order.telegramId, text: texts.orderStatus(lang, order.number, LOCAL_ORDER_STATUS_INFO[status][lang]) });
 }
 
+// ------------------------------------------------------------------------------------------------ deleting cancelled orders
+
+/** Database side of isCancelledOrder (@shop/shared); the statistics use the same rule (CANCELLED in stats.ts). */
+export const cancelledOrderWhere = or(
+  and(eq(orders.syncStatus, "local"), eq(orders.localStatus, "cancelled")),
+  eq(orders.syncStatus, "cancelled"),
+  and(ne(orders.syncStatus, "local"), eq(orders.msStateType, "Unsuccessful")),
+)!;
+
+/**
+ * Removes cancelled orders for good (their lines go with them). Only cancelled ones: their stock already came back when they were
+ * cancelled, so nothing else changes. The check is part of the DELETE itself, so an order un-cancelled a moment earlier stays.
+ * With ids: those of them that are cancelled; without: every cancelled order. Returns the removed orders' numbers.
+ * Nothing is sent to MoySklad (an order there stays there).
+ */
+export async function deleteCancelledOrders(rt: Pick<Runtime, "db">, ids?: string[]): Promise<string[]> {
+  if (ids && ids.length === 0) return [];
+  const where = ids ? and(inArray(orders.id, ids), cancelledOrderWhere) : cancelledOrderWhere;
+  const gone = await rt.db.delete(orders).where(where).returning({ number: orders.number });
+  return gone.map((o) => o.number);
+}

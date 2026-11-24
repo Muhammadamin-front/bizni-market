@@ -27,6 +27,15 @@ export function isLocalOrderStatus(v: unknown): v is LocalOrderStatus {
   return typeof v === "string" && (LOCAL_ORDER_STATUSES as readonly string[]).includes(v);
 }
 
+/**
+ * Cancelled, whichever way the order is handled: our admin status "cancelled", the pipeline status "cancelled", or a MoySklad state
+ * of type Unsuccessful. Same rule as the database side (cancelledOrderWhere in core, CANCELLED in core/stats.ts).
+ * Only such orders can be deleted for good: their stock already went back when they were cancelled.
+ */
+export function isCancelledOrder(o: { syncStatus: string; localStatus: string | null; msStateType: string | null }): boolean {
+  return (o.syncStatus === "local" && o.localStatus === "cancelled") || o.syncStatus === "cancelled" || (o.syncStatus !== "local" && o.msStateType === "Unsuccessful");
+}
+
 export const OrderLineInput = z.object({
   productId: z.uuid(),
   quantity: z.number().positive().max(100_000),

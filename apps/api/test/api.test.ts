@@ -440,6 +440,38 @@ describe("admin API", () => {
     expect(json(await get(`/v1/admin/products/${p.id}`, hdr())).availableQty).toBe(2);
   });
 
+  it("deletes a cancelled order for good, refuses any other, and clears every cancelled order at once", async () => {
+    const p = json(await post("/v1/admin/products", { name: "Qalam ko'k", price: 3000, availableQty: 5 }, hdr()));
+    const place = async (phone: string) =>
+      json(await post("/v1/orders", { items: [{ productId: p.id, quantity: 1 }], name: "Vali", phone, deliveryMethod: "pickup" }, { "idempotency-key": `del-order-${Date.now()}-${phone.replace(/ /g, "")}` }));
+    const [a, b, c] = [await place("93 111 22 55"), await place("93 111 22 66"), await place("93 111 22 77")];
+    const del = (id: string, headers: Record<string, string> = hdr()) => w.app.inject({ method: "DELETE", url: `/v1/admin/orders/${id}`, headers });
+
+    expect((await del(a.id)).statusCode).toBe(409); // a new order is never deleted
+    expect(json(await get(`/v1/admin/orders/${a.id}`, hdr())).cancelled).toBe(false);
+    for (const o of [a, b]) expect((await post(`/v1/admin/orders/${o.id}/local-status`, { status: "cancelled" }, hdr())).statusCode).toBe(200);
+    const list = json(await get("/v1/admin/orders?sync=cancelled", hdr()));
+    expect(list.rows.map((r: { id: string }) => r.id)).toEqual(expect.arrayContaining([a.id, b.id]));
+    expect(list.rows.every((r: { cancelled: boolean }) => r.cancelled)).toBe(true);
+    expect(list.cancelledTotal).toBe(list.total);
+    expect(json(await get(`/v1/admin/orders/${a.id}`, hdr())).cancelled).toBe(true);
+
+    expect((await del(a.id, { cookie })).statusCode).toBe(403); // no CSRF header
+    expect((await del(a.id)).statusCode).toBe(204);
+    expect((await get(`/v1/admin/orders/${a.id}`, hdr())).statusCode).toBe(404);
+    expect((await get(`/v1/orders/${a.publicId}`)).statusCode).toBe(404); // gone for the customer too
+    expect((await del(a.id)).statusCode).toBe(404);
+
+    expect((await post("/v1/admin/orders/delete-cancelled", { confirm: "yes" }, hdr())).statusCode).toBe(400);
+    expect(json(await post("/v1/admin/orders/delete-cancelled", { confirm: "DELETE" }, hdr())).deleted).toBeGreaterThanOrEqual(1);
+    expect((await get(`/v1/admin/orders/${b.id}`, hdr())).statusCode).toBe(404);
+    expect((await get(`/v1/admin/orders/${c.id}`, hdr())).statusCode).toBe(200); // not cancelled: stays
+    expect(json(await get("/v1/admin/orders", hdr())).cancelledTotal).toBe(0);
+    expect(json(await get(`/v1/admin/products/${p.id}`, hdr())).availableQty).toBe(4); // 5 - 3 ordered + 2 back on cancel
+    const actions = json(await get("/v1/admin/audit", hdr())).map((r: { action: string }) => r.action);
+    expect(actions).toEqual(expect.arrayContaining(["order_delete", "order_delete_cancelled"]));
+  });
+
   it("shows sync health on the dashboard and queues manual runs", async () => {
     const d = json(await get("/v1/admin/dashboard", hdr()));
     expect(d.connected).toBe(true);

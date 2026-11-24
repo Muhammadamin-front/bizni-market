@@ -13,7 +13,8 @@ NAME="biznimarket-${COMMIT}-${ARCH}"
 OUT="$HOME/biznimarket-releases"
 CACHE="$HOME/.cache/biznimarket-build"
 mkdir -p "$OUT" "$CACHE"
-WORK="$(mktemp -d /tmp/bm-build.XXXXXX)"
+# TMPDIR lets the caller keep the build files on a volume of its choice (Contabo: the 35 GB Kanso volume).
+WORK="$(mktemp -d "${TMPDIR:-/tmp}/bm-build.XXXXXX")"
 trap 'rm -rf "$WORK"' EXIT
 
 # Node 22 (official build, checksum-verified, cached between builds).

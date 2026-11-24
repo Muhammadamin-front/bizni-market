@@ -1,6 +1,6 @@
 import { readdir } from "node:fs/promises";
 import path from "node:path";
-import { categories, eq, orders, productImages, products, stockLevels } from "@shop/db";
+import { categories, eq, orderItems, orders, productImages, products, stockLevels } from "@shop/db";
 import { CheckoutInput, ManualCategoryInput, ManualProductInput } from "@shop/shared";
 import sharp from "sharp";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
@@ -11,6 +11,7 @@ import {
   createManualCategory,
   createManualProduct,
   createOrder,
+  deleteCancelledOrders,
   deleteManualCategory,
   deleteManualProduct,
   deleteProductImage,
@@ -229,6 +230,29 @@ describe("orders for manual products", () => {
     const [row] = await w.rt.db.select().from(orders).where(eq(orders.id, order.id));
     expect(row!.localStatus).toBe("new");
     expect(w.mock.orders).toHaveLength(0);
+  });
+
+  it("deleting removes only cancelled orders, for good, and leaves the stock as it is", async () => {
+    const id = await createManualProduct(w.rt, product({ availableQty: 6 }));
+    const qty = async () => (await w.rt.db.select({ q: products.availableQty }).from(products).where(eq(products.id, id)))[0]!.q;
+    const place = async (n: number) => (await createOrder(w.rt, checkout([{ productId: id, quantity: n }]), ctx())).order;
+    const keep = await place(1);
+    const drop = await place(2);
+    const later = await place(1);
+    await setLocalOrderStatus(w.rt, drop.id, "cancelled");
+    await setLocalOrderStatus(w.rt, later.id, "cancelled");
+    expect(await qty()).toBe(5);
+
+    expect(await deleteCancelledOrders(w.rt, [keep.id])).toEqual([]); // not cancelled: stays
+    expect(await deleteCancelledOrders(w.rt, [])).toEqual([]);
+    expect(await deleteCancelledOrders(w.rt, [drop.id])).toEqual([drop.number]);
+    expect(await w.rt.db.select().from(orders).where(eq(orders.id, drop.id))).toHaveLength(0);
+    expect(await w.rt.db.select().from(orderItems).where(eq(orderItems.orderId, drop.id))).toHaveLength(0);
+    expect(await qty()).toBe(5); // the stock came back on cancel, deleting does not add it twice
+
+    expect(await deleteCancelledOrders(w.rt)).toEqual([later.number]); // every cancelled one
+    expect((await w.rt.db.select().from(orders).where(eq(orders.id, keep.id)))[0]?.localStatus).toBe("new");
+    expect(await qty()).toBe(5);
   });
 
   it("refuses a status change on an order that lives in MoySklad", async () => {

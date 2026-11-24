@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { discountPercent, formatAmount, formatPrice, getMessages, LOCALES, stockStatus } from "../src";
+import { discountPercent, formatAmount, formatPrice, getMessages, isCancelledOrder, LOCALES, stockStatus } from "../src";
 
 describe("money", () => {
   it("groups integer UZS with non-breaking spaces", () => {
@@ -62,5 +62,18 @@ describe("i18n catalogs", () => {
       expect(m.product.perPack(12)).toContain("12");
       expect(m.catalog.results(48)).toContain("48");
     }
+  });
+});
+
+describe("isCancelledOrder", () => {
+  it("is true for a cancelled order in either pipeline and false for anything else", () => {
+    const o = (syncStatus: string, localStatus: string | null, msStateType: string | null) => isCancelledOrder({ syncStatus, localStatus, msStateType });
+    expect(o("local", "cancelled", null)).toBe(true);
+    expect(o("cancelled", null, null)).toBe(true);
+    expect(o("synced", null, "Unsuccessful")).toBe(true);
+    expect(o("local", "new", null)).toBe(false);
+    expect(o("local", "done", "Unsuccessful")).toBe(false); // a local order follows its own status only
+    expect(o("synced", null, "Successful")).toBe(false);
+    expect(o("pending_sync", null, null)).toBe(false);
   });
 });

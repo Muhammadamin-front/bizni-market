@@ -34,6 +34,8 @@ check_ports() {
 }
 
 env_get() { sed -n "s/^$1=//p" "$ENVF" | tail -1; }
+# Address the web unit listens on: 127.0.0.1, or what a drop-in sets (Contabo: the Docker bridge 172.19.0.1, so Caddy can reach it).
+web_host() { local h; h="$(systemctl show -p Environment --value "$APP-web" 2>/dev/null | tr ' ' '\n' | sed -n 's/^HOSTNAME=//p' | tail -1)"; echo "${h:-127.0.0.1}"; }
 rand_hex() { openssl rand -hex "$1"; }
 
 ensure_user() {
@@ -182,7 +184,7 @@ cmd_release() {
   wait_http "http://127.0.0.1:$API_PORT/ready" 90 || { journalctl -u $APP-api -n 40 --no-pager; die "API did not become ready"; }
   systemctl restart $APP-worker $APP-web
   systemctl start $APP-backup.timer
-  wait_http "http://127.0.0.1:$WEB_PORT/robots.txt" 60 || { journalctl -u $APP-web -n 40 --no-pager; die "web did not start"; }
+  wait_http "http://$(web_host):$WEB_PORT/robots.txt" 60 || { journalctl -u $APP-web -n 40 --no-pager; die "web did not start"; }
 
   # The first admin exists now: the plain password no longer needs to sit in app.env.
   if runuser -u postgres -- psql -qXtAd "$APP" -c "SELECT count(*) FROM admin_users" 2>/dev/null | grep -qv '^0$'; then
@@ -204,7 +206,7 @@ cmd_check() {
   for s in $APP-api $APP-worker $APP-web; do printf '%-22s %s\n' "$s" "$(systemctl is-active $s)"; systemctl is-active --quiet $s || ok=0; done
   printf '%-22s %s\n' "backup timer" "$(systemctl is-active $APP-backup.timer) (next: $(systemctl show $APP-backup.timer -p NextElapseUSecRealtime --value))"
   curl -fsS -o /dev/null --max-time 5 "http://127.0.0.1:$API_PORT/ready" && echo "api ready: yes" || { echo "api ready: NO"; ok=0; }
-  curl -fsS -o /dev/null --max-time 5 "http://127.0.0.1:$WEB_PORT/uz" && echo "site /uz: yes" || { echo "site /uz: NO"; ok=0; }
+  curl -fsS -o /dev/null --max-time 5 "http://$(web_host):$WEB_PORT/uz" && echo "site /uz: yes" || { echo "site /uz: NO"; ok=0; }
   echo "listening (ours):"; ss -ltnH "( sport = :$WEB_PORT or sport = :$API_PORT )" | awk '{print "  " $4}'
   ss -ltnH "( sport = :$WEB_PORT or sport = :$API_PORT )" | awk '{print $4}' | grep -qvE '^(127\.0\.0\.1|\[::1\]):' && { echo "WARNING: something of ours listens beyond loopback"; ok=0; }
   [ $ok = 1 ] && echo "ALL OK" || { echo "PROBLEMS - see above"; return 1; }
