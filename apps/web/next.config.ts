@@ -46,7 +46,8 @@ const config: NextConfig = {
   reactStrictMode: true,
   // Build-time switch. The shared-host release (deploy/server) runs from a read-only folder, so revalidated pages stay in memory
   // instead of being written next to the build. Docker keeps the default (write to disk).
-  experimental: { isrFlushToDisk: process.env.NEXT_ISR_FLUSH_TO_DISK !== "false" },
+  // proxyTimeout: the /api rewrite waits up to 75 s, so a slow AI answer (core gives up on Gemini at 55 s) still reaches the admin.
+  experimental: { isrFlushToDisk: process.env.NEXT_ISR_FLUSH_TO_DISK !== "false", proxyTimeout: 75_000 },
   async rewrites() {
     return [
       { source: "/api/:path*", destination: `${API}/:path*` },

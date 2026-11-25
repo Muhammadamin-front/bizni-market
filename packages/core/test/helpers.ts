@@ -62,7 +62,7 @@ export async function createWorld(over: Record<string, string> = {}): Promise<Te
   await runMigrations(rt.pool, fileURLToPath(new URL("../../db/drizzle", import.meta.url)));
 
   const reset = async () => {
-    await rt.pool.query(`TRUNCATE products, categories, brands, orders, customers, sync_runs, sync_state, webhook_events, integration_settings, notifications, banners, featured_slots, content_blocks, admin_users RESTART IDENTITY CASCADE`);
+    await rt.pool.query(`TRUNCATE products, categories, brands, orders, customers, sync_runs, sync_state, webhook_events, integration_settings, notifications, banners, featured_slots, content_blocks, admin_users, ai_usage RESTART IDENTITY CASCADE`);
     await rt.redis.flushdb();
     mock.reset();
     mock.config.rateLimit.enabled = false;

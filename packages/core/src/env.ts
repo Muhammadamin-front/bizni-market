@@ -59,6 +59,20 @@ const EnvSchema = z.object({
 
   /** Open the Mini App in a plain browser with a stand-in user. Refused in production when a real bot token is set. */
   TMA_DEV_MODE: flag(),
+
+  // --- AI assistant (Google Gemini). A paid add-on: locked until the developer turns it on here after payment; the owner
+  // cannot unlock it from the admin. The key lives only in this file (never in the database, the admin or a URL).
+  AI_ENABLED: flag(),
+  GEMINI_API_KEY: z.string().default(""),
+  /** "-latest" alias: Google moves it to the newest Flash model, so nothing here goes stale. */
+  GEMINI_MODEL: z.string().default("gemini-flash-latest"),
+  GEMINI_BASE_URL: z.string().default("https://generativelanguage.googleapis.com/v1beta"),
+  /** Gemini tokens the shop may spend per calendar month (Tashkent time). Shown to the owner as used / limit. */
+  AI_MONTHLY_TOKEN_LIMIT: z.coerce.number().int().min(0).default(1_000_000),
+  /** One-time price shown on the locked AI button, in UZS. */
+  AI_PRICE_UZS: z.coerce.number().int().min(0).default(300_000),
+  /** Where the owner pays / asks to unlock (e.g. https://t.me/username or a phone). Shown on the locked card. */
+  AI_CONTACT: z.string().default(""),
   SYNC_ON_BOOT: flag("true"),
   LOG_LEVEL: z.string().default("info"),
 });

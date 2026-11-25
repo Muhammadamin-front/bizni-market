@@ -1,12 +1,13 @@
 import cookie from "@fastify/cookie";
 import fastifyStatic from "@fastify/static";
-import { AuthError, CatalogEditError, ImageError, OrderError, type Runtime } from "@shop/core";
+import { AiError, AuthError, CatalogEditError, ImageError, OrderError, type Runtime } from "@shop/core";
 import Fastify, { type FastifyBaseLogger, type FastifyInstance } from "fastify";
 import { mkdirSync } from "node:fs";
 import { isIP } from "node:net";
 import path from "node:path";
 import { ZodError } from "zod";
 import { adminRoutes } from "./routes/admin";
+import { aiRoutes } from "./routes/ai";
 import { customerRoutes } from "./routes/customer";
 import { hookRoutes } from "./routes/hooks";
 import { orderRoutes } from "./routes/orders";
@@ -52,6 +53,7 @@ export async function buildApp(rt: Runtime): Promise<FastifyInstance> {
     if (err instanceof OrderError) return reply.code(err.status).send({ error: err.code, details: err.details });
     if (err instanceof AuthError) return reply.code(401).send({ error: err.code, message: err.message });
     if (err instanceof CatalogEditError) return reply.code(err.status).send({ error: err.code, message: err.message });
+    if (err instanceof AiError) return reply.code(err.status).send({ error: err.code });
     if (err instanceof ImageError) return reply.code(err.code === "too_large" ? 413 : 422).send({ error: `image_${err.code}`, message: err.message });
     const status = err.statusCode ?? 500;
     if (status >= 500) {
@@ -88,5 +90,6 @@ export async function buildApp(rt: Runtime): Promise<FastifyInstance> {
   orderRoutes(app, rt);
   hookRoutes(app, rt);
   adminRoutes(app, rt);
+  aiRoutes(app, rt);
   return app;
 }

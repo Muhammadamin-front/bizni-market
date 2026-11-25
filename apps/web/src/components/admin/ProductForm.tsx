@@ -13,6 +13,7 @@ import { ArrowLeft, ArrowRight, ImagePlus, Loader2, Star, Trash2, TriangleAlert 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { AiProductTools } from "./ai";
 import { adminFetch, currency, fmtMoney, useAdminData } from "./api";
 import { useT, type AdminLang, type L, type T } from "./i18n";
 import { uploadProductImage } from "./images";
@@ -586,6 +587,7 @@ export function ProductForm({ initial }: { initial?: AdminProductDetail }) {
                 <Err text={errors.descriptionRu} />
               </Field>
             </div>
+            <AiProductTools form={form} apply={(patch) => setForm((f) => ({ ...f, ...patch }))} />
           </Section>
 
           <Section title={t("Цена и наличие", "Narx va qoldiq")}>

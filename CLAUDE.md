@@ -23,6 +23,16 @@ The shop was first built as "Bizni Market"; internal names (`biznimarket` user/s
   DNS: Cloudflare zone, A records → 173.249.4.209, **DNS only** (grey cloud). If the proxy is ever turned on, the client-IP setup must change.
 - The Telegram webhook is set with `ip_address=173.249.4.209`; if the server IP changes, set the webhook again with the new address.
 
+## AI assistant (Gemini, `/admin/ai`) — a paid add-on
+- Locked by default: the admin shows a lock and the one-time price (300 000 so‘m). Only the developer unlocks it, in
+  `/etc/biznimarket/app.env`: `AI_ENABLED=1` and `GEMINI_API_KEY` (never paste the key in chat; append it with
+  `read -rs K; printf 'GEMINI_API_KEY=%s\n' "$K" | ssh root@173.249.4.209 'cat >> /etc/biznimarket/app.env'`), then
+  `systemctl restart biznimarket-api`. Optional: `GEMINI_MODEL` (default `gemini-flash-latest`), `AI_MONTHLY_TOKEN_LIMIT`
+  (default 1 000 000 tokens per calendar month, Tashkent time), `AI_PRICE_UZS`, `AI_CONTACT` (shown on the lock card).
+- Features: product description (uz+ru), the admin's text into both languages (both only fill the form), sales analysis,
+  advice. Usage per call in table `ai_usage` (Gemini's own token counts); the menu and `/admin/ai` show used / limit.
+- Sent to Google: product texts and aggregated sales numbers only, never customer names, phones or addresses.
+
 ## Rules on the shared VPS
 - Caddyfile is a single-file bind mount: back it up, **append** (`cat >>`, never `sed -i` or an editor that replaces the file), then
   `docker exec taklifnoma-caddy caddy validate --config /etc/caddy/Caddyfile` and `... caddy reload ...`. Never restart the container.

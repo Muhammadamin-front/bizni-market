@@ -29,6 +29,13 @@
       "when": 1795601532587,
       "tag": "0003_product_ru",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795602454829,
+      "tag": "0004_ai_usage",
+      "breakpoints": true
     }
   ]
 }

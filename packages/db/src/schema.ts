@@ -368,6 +368,25 @@ export const orderItems = pgTable(
 
 // ---------------------------------------------------------------------------------------------- admin, audit, outbox
 
+/** One row per Gemini call that came back (tokens were spent even when the answer was unusable). The monthly limit sums these. */
+export const aiUsage = pgTable(
+  "ai_usage",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    adminId: uuid("admin_id"),
+    /** describe | translate | analyze | advice */
+    feature: text("feature").notNull(),
+    model: text("model").notNull().default(""),
+    promptTokens: integer("prompt_tokens").notNull().default(0),
+    outputTokens: integer("output_tokens").notNull().default(0),
+    totalTokens: integer("total_tokens").notNull().default(0),
+    ok: boolean("ok").notNull().default(true),
+    error: text("error").notNull().default(""),
+    createdAt: ts("created_at").notNull().defaultNow(),
+  },
+  (t) => [index("ai_usage_created").on(t.createdAt)],
+);
+
 export const adminUsers = pgTable("admin_users", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: text("email").notNull().unique(),

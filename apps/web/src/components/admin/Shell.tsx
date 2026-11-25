@@ -3,15 +3,17 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { AiNavLabel } from "./ai";
 import { adminFetch } from "./api";
 import { useShopName } from "./brand";
 import { LangSwitch, useT, type L } from "./i18n";
 import { btnPrimary, Field, input, Notice, PasswordInput } from "./ui";
 
-const NAV: { href: string; label: L; moysklad?: boolean }[] = [
+const NAV: { href: string; label: L; moysklad?: boolean; ai?: boolean }[] = [
   { href: "/admin", label: { ru: "Обзор", uz: "Umumiy holat" } },
   { href: "/admin/orders", label: { ru: "Заказы", uz: "Buyurtmalar" } },
   { href: "/admin/stats", label: { ru: "Статистика", uz: "Statistika" } },
+  { href: "/admin/ai", label: { ru: "AI-помощник", uz: "AI yordamchi" }, ai: true },
   { href: "/admin/products", label: { ru: "Товары", uz: "Tovarlar" } },
   { href: "/admin/categories", label: { ru: "Категории", uz: "Kategoriyalar" } },
   { href: "/admin/content", label: { ru: "Контент", uz: "Sayt matnlari" } },
@@ -64,7 +66,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             const active = n.href === "/admin" ? pathname === "/admin" : pathname.startsWith(n.href);
             return (
               <Link key={n.href} href={n.href} aria-current={active ? "page" : undefined} className={`shrink-0 rounded-control px-3 py-2 text-small font-medium ${active ? "bg-ink text-on-ink" : "text-ink-2 hover:bg-sunken hover:text-ink"}`}>
-                {n.label[t.lang]}
+                {n.ai ? <AiNavLabel /> : n.label[t.lang]}
               </Link>
             );
           })}

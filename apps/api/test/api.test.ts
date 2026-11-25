@@ -339,6 +339,29 @@ describe("admin API", () => {
     expect((await get(`/v1/products/${p.slug}`)).statusCode).toBe(200);
   });
 
+  it("AI assistant: locked by default (price shown, every AI call 403), admin-only, no key ever returned", async () => {
+    for (const url of ["/v1/admin/ai/describe", "/v1/admin/ai/translate", "/v1/admin/ai/analyze", "/v1/admin/ai/advice"]) {
+      expect((await post(url, {})).statusCode).toBe(401);
+    }
+    expect((await get("/v1/admin/ai/status")).statusCode).toBe(401);
+    const status = await get("/v1/admin/ai/status", hdr());
+    expect(status.statusCode).toBe(200);
+    expect(json(status)).toMatchObject({ enabled: false, configured: false, priceUzs: 300_000, used: 0 });
+    expect(status.body).not.toMatch(/key/i);
+    const calls: [string, unknown][] = [
+      ["/v1/admin/ai/describe", { name: "Sichqoncha" }],
+      ["/v1/admin/ai/translate", { description: "Ручка" }],
+      ["/v1/admin/ai/analyze", { days: 30, lang: "uz" }],
+      ["/v1/admin/ai/advice", { question: "Savdoni qanday oshiraman?", lang: "uz" }],
+    ];
+    for (const [url, body] of calls) {
+      const res = await post(url, body, hdr());
+      expect(res.statusCode).toBe(403);
+      expect(json(res).error).toBe("ai_locked");
+    }
+    expect((await post("/v1/admin/ai/advice", { question: "?" }, hdr())).statusCode).toBe(400);
+  });
+
   it("creates, photographs, edits and deletes a product by hand, and the storefront follows", async () => {
     const cat = await post("/v1/admin/categories", { nameUz: "Qo‘lda", nameRu: "Вручную" }, hdr());
     expect(cat.statusCode).toBe(201);

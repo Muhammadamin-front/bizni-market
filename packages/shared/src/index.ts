@@ -8,3 +8,4 @@ export * from "./settings";
 export * from "./order";
 export * from "./api-types";
 export * from "./catalog-admin";
+export * from "./ai";
