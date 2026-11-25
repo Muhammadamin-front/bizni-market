@@ -52,7 +52,8 @@ export function customerRoutes(app: FastifyInstance, rt: Runtime) {
   // ---- favourites
   app.get("/v1/favorites", { preHandler: auth }, async (req) => {
     const rows = await rt.db.select({ productId: favorites.productId }).from(favorites).where(eq(favorites.customerId, req.tma!.cid)).orderBy(desc(favorites.createdAt));
-    return productsByIds(rt, rows.map((r) => r.productId));
+    const { locale } = z.object({ locale: z.enum(["uz", "ru"]).default("uz") }).parse(req.query);
+    return productsByIds(rt, rows.map((r) => r.productId), locale);
   });
   app.get("/v1/favorites/ids", { preHandler: auth }, async (req) =>
     (await rt.db.select({ productId: favorites.productId }).from(favorites).where(eq(favorites.customerId, req.tma!.cid))).map((r) => r.productId),

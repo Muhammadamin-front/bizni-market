@@ -17,12 +17,15 @@ import {
   deleteProductImage,
   fullSync,
   getProduct,
+  homePayload,
   ImageError,
   isDemoSource,
   listProducts,
   OrderError,
+  productsByIds,
   quickEditProduct,
   reconcileProducts,
+  relatedProducts,
   reorderProductImages,
   setLocalOrderStatus,
   syncFolders,
@@ -98,6 +101,42 @@ describe("manual catalogue", () => {
     expect(after!.oldPrice).toBe(9000);
     await quickEditProduct(w.rt, id, { hidden: true });
     expect(await getProduct(w.rt, after!.slug, "uz")).toBeNull();
+  });
+
+  it("name and description in two languages: /ru shows the Russian ones, an empty Russian field falls back to Uzbek", async () => {
+    const both = await createManualProduct(w.rt, product({ nameRu: "Тетрадь 48 листов, клетка", description: "Oq qogʻoz, 48 varaq.", descriptionRu: "Белая бумага, 48 листов." }));
+    const uzOnly = await createManualProduct(w.rt, product({ name: "Ruchka koʻk", article: "RK-1", description: "Koʻk siyoh." }));
+    const list = async (locale: "uz" | "ru", q?: string) =>
+      Object.fromEntries((await listProducts(w.rt, { q, brand: [], inStock: false, sort: "name", page: 1, pageSize: 10, locale })).items.map((p) => [p.id, p.name]));
+
+    expect(await list("uz")).toEqual({ [both]: "Daftar 48 varaq katak", [uzOnly]: "Ruchka koʻk" });
+    expect(await list("ru")).toEqual({ [both]: "Тетрадь 48 листов, клетка", [uzOnly]: "Ruchka koʻk" });
+    expect(Object.keys(await list("ru", "тетрадь"))).toEqual([both]); // the Russian name is searchable
+    expect(Object.keys(await list("uz", "daftar"))).toEqual([both]);
+
+    const slug = (await w.rt.db.select({ slug: products.slug }).from(products).where(eq(products.id, both)))[0]!.slug;
+    expect(slug).toMatch(/^daftar-48-varaq-katak-/); // the link is built from the Uzbek name, the same on /uz and /ru
+    const detail = async (s: string, locale: "uz" | "ru") => {
+      const found = await getProduct(w.rt, s, locale);
+      return found && "product" in found ? { name: found.product.name, description: found.product.description } : null;
+    };
+    expect(await detail(slug, "ru")).toEqual({ name: "Тетрадь 48 листов, клетка", description: "Белая бумага, 48 листов." });
+    expect(await detail(slug, "uz")).toEqual({ name: "Daftar 48 varaq katak", description: "Oq qogʻoz, 48 varaq." });
+    const uzSlug = (await w.rt.db.select({ slug: products.slug }).from(products).where(eq(products.id, uzOnly)))[0]!.slug;
+    expect(await detail(uzSlug, "ru")).toEqual({ name: "Ruchka koʻk", description: "Koʻk siyoh." });
+
+    // Cart, favourites, home sections and "similar products" speak the shopper's language too.
+    expect((await productsByIds(w.rt, [both], "ru")).map((p) => p.name)).toEqual(["Тетрадь 48 листов, клетка"]);
+    expect((await productsByIds(w.rt, [both])).map((p) => p.name)).toEqual(["Daftar 48 varaq katak"]);
+    expect((await relatedProducts(w.rt, uzOnly, "ru")).map((p) => p.name)).toEqual(["Тетрадь 48 листов, клетка"]);
+    expect((await homePayload(w.rt, "ru")).newArrivals.map((p) => p.name)).toContain("Тетрадь 48 листов, клетка");
+
+    // The admin edits both; order lines keep the Uzbek name so staff and statistics see one name per product.
+    await updateManualProduct(w.rt, both, product({ nameRu: "", descriptionRu: "" }));
+    expect(await detail(slug, "ru")).toEqual({ name: "Daftar 48 varaq katak", description: "" });
+    await updateManualProduct(w.rt, both, product({ nameRu: "Тетрадь" }));
+    const { order } = await createOrder(w.rt, { ...checkout([{ productId: both, quantity: 1 }]), language: "ru" }, ctx());
+    expect(order.items.map((i) => i.name)).toEqual(["Daftar 48 varaq katak"]);
   });
 
   it("without a MoySklad token the shop is the owner's real catalogue, never labelled a demo", () => {

@@ -30,7 +30,10 @@ function visible(s: Pick<IntegrationSettings, "requireImage">) {
 }
 
 const FROM = sql`FROM products p LEFT JOIN brands b ON b.id = p.brand_id LEFT JOIN product_overlays o ON o.product_id = p.id`;
-const CARD_COLUMNS = sql`p.id, p.slug, p.name, p.article, b.name AS brand, p.price, p.old_price, p.pack_size, p.uom, p.qty_step, p.available_qty,
+/** The name and description in the shopper's language: the owner's Russian ones on /ru when filled in, otherwise the main (Uzbek) ones. */
+const nameCol = (locale: Locale) => (locale === "ru" ? sql`COALESCE(NULLIF(p.name_ru, ''), p.name)` : sql`p.name`);
+const descriptionCol = (locale: Locale) => (locale === "ru" ? sql`COALESCE(NULLIF(p.description_ru, ''), p.description)` : sql`p.description`);
+const cardColumns = (locale: Locale) => sql`p.id, p.slug, ${nameCol(locale)} AS name, p.article, b.name AS brand, p.price, p.old_price, p.pack_size, p.uom, p.qty_step, p.available_qty,
   (SELECT storage_key FROM product_images pi WHERE pi.product_id = p.id AND pi.status = 'ready' AND pi.storage_key IS NOT NULL ORDER BY pi.position LIMIT 1) AS image_key`;
 
 interface CardRow {
@@ -211,13 +214,13 @@ export async function listProducts(rt: Rt, q: CatalogQuery): Promise<CatalogPage
     q.sort === "price_asc" ? sql`p.price ASC, p.name`
     : q.sort === "price_desc" ? sql`p.price DESC, p.name`
     : q.sort === "new" ? sql`p.first_seen_at DESC NULLS LAST, p.ms_updated_at DESC NULLS LAST`
-    : q.sort === "name" ? sql`${stockFirst}, p.name`
+    : q.sort === "name" ? sql`${stockFirst}, ${nameCol(q.locale)}`
     : sql`${stockFirst}, p.popularity DESC, p.name`;
   const searchOrder = term ? sql`${rank}, similarity(p.name_search, ${normalizeSearch(term)}) DESC, ` : sql``;
 
   const offset = (q.page - 1) * q.pageSize;
   const [list, totals, range] = await Promise.all([
-    rows<CardRow>(rt.db, sql`${categoryCte}SELECT ${CARD_COLUMNS} ${FROM} WHERE ${whereAll} ORDER BY ${searchOrder}${order} LIMIT ${q.pageSize} OFFSET ${offset}`),
+    rows<CardRow>(rt.db, sql`${categoryCte}SELECT ${cardColumns(q.locale)} ${FROM} WHERE ${whereAll} ORDER BY ${searchOrder}${order} LIMIT ${q.pageSize} OFFSET ${offset}`),
     rows<{ n: number }>(rt.db, sql`${categoryCte}SELECT count(*)::int AS n ${FROM} WHERE ${whereAll}`),
     rows<{ lo: number | null; hi: number | null }>(rt.db, sql`${categoryCte}SELECT min(p.price) AS lo, max(p.price) AS hi ${FROM} WHERE ${whereNoPrice}`),
   ]);
@@ -251,7 +254,7 @@ export async function getProduct(rt: Rt, slug: string, locale: Locale): Promise<
   const fetchBy = (cond: ReturnType<typeof sql>) =>
     rows<CardRow & { description: string; barcodes: string[]; category_id: string | null; ms_id: string }>(
       rt.db,
-      sql`SELECT ${CARD_COLUMNS}, p.description, p.barcodes, p.category_id, p.ms_id ${FROM} WHERE ${cond} AND ${visible(s)} LIMIT 1`,
+      sql`SELECT ${cardColumns(locale)}, ${descriptionCol(locale)} AS description, p.barcodes, p.category_id, p.ms_id ${FROM} WHERE ${cond} AND ${visible(s)} LIMIT 1`,
     );
   let [row] = await fetchBy(sql`p.slug = ${slug}`);
   if (!row) {
@@ -278,11 +281,11 @@ export async function getProduct(rt: Rt, slug: string, locale: Locale): Promise<
   };
 }
 
-export async function relatedProducts(rt: Rt, productId: string, limit = 8): Promise<ProductCardData[]> {
+export async function relatedProducts(rt: Rt, productId: string, locale: Locale = "uz", limit = 8): Promise<ProductCardData[]> {
   const s = await loadSettings(rt);
   const list = await rows<CardRow>(
     rt.db,
-    sql`SELECT ${CARD_COLUMNS} ${FROM}
+    sql`SELECT ${cardColumns(locale)} ${FROM}
         WHERE ${visible(s)} AND p.id <> ${productId}
           AND (p.category_id = (SELECT category_id FROM products WHERE id = ${productId}) OR p.brand_id = (SELECT brand_id FROM products WHERE id = ${productId}))
         ORDER BY (p.category_id = (SELECT category_id FROM products WHERE id = ${productId})) DESC, (p.available_qty > 0) DESC, p.popularity DESC, p.name
@@ -291,28 +294,28 @@ export async function relatedProducts(rt: Rt, productId: string, limit = 8): Pro
   return list.map((r) => toCard(r, s));
 }
 
-export async function productsByIds(rt: Rt, ids: string[]): Promise<ProductCardData[]> {
+export async function productsByIds(rt: Rt, ids: string[], locale: Locale = "uz"): Promise<ProductCardData[]> {
   if (ids.length === 0) return [];
   const s = await loadSettings(rt);
-  const list = await rows<CardRow>(rt.db, sql`SELECT ${CARD_COLUMNS} ${FROM} WHERE ${visible(s)} AND p.id IN (${sql.join(ids.map((i) => sql`${i}::uuid`), sql`, `)})`);
+  const list = await rows<CardRow>(rt.db, sql`SELECT ${cardColumns(locale)} ${FROM} WHERE ${visible(s)} AND p.id IN (${sql.join(ids.map((i) => sql`${i}::uuid`), sql`, `)})`);
   const byId = new Map(list.map((r) => [r.id, toCard(r, s)]));
   return ids.map((id) => byId.get(id)).filter((c): c is ProductCardData => !!c);
 }
 
 // ------------------------------------------------------------------------------------------------ home
 
-async function slotProducts(rt: Rt, slot: string, s: IntegrationSettings, limit: number): Promise<ProductCardData[]> {
+async function slotProducts(rt: Rt, slot: string, s: IntegrationSettings, limit: number, locale: Locale): Promise<ProductCardData[]> {
   const list = await rows<CardRow>(
     rt.db,
-    sql`SELECT ${CARD_COLUMNS} ${FROM} JOIN featured_slots f ON f.product_id = p.id
+    sql`SELECT ${cardColumns(locale)} ${FROM} JOIN featured_slots f ON f.product_id = p.id
         WHERE f.slot = ${slot} AND (f.active_from IS NULL OR f.active_from <= now()) AND (f.active_to IS NULL OR f.active_to >= now()) AND ${visible(s)}
         ORDER BY f.position, p.name LIMIT ${limit}`,
   );
   return list.map((r) => toCard(r, s));
 }
 
-async function autoProducts(rt: Rt, s: IntegrationSettings, extra: ReturnType<typeof sql>, order: ReturnType<typeof sql>, limit: number): Promise<ProductCardData[]> {
-  const list = await rows<CardRow>(rt.db, sql`SELECT ${CARD_COLUMNS} ${FROM} WHERE ${visible(s)} AND ${extra} ORDER BY ${order} LIMIT ${limit}`);
+async function autoProducts(rt: Rt, s: IntegrationSettings, extra: ReturnType<typeof sql>, order: ReturnType<typeof sql>, limit: number, locale: Locale): Promise<ProductCardData[]> {
+  const list = await rows<CardRow>(rt.db, sql`SELECT ${cardColumns(locale)} ${FROM} WHERE ${visible(s)} AND ${extra} ORDER BY ${order} LIMIT ${limit}`);
   return list.map((r) => toCard(r, s));
 }
 
@@ -327,15 +330,15 @@ export async function homePayload(rt: Rt, locale: Locale): Promise<HomePayload> 
   // Curated slots win. Without them the sections fall back to REAL data only: offers = products with a genuine higher old price,
   // bestsellers = products that were actually ordered, new = products first seen after launch. Empty sections are simply hidden.
   const [featured, curatedNew, curatedOffers, curatedBest] = await Promise.all([
-    slotProducts(rt, "featured", s, 12),
-    slotProducts(rt, "new", s, 12),
-    slotProducts(rt, "offers", s, 12),
-    slotProducts(rt, "bestseller", s, 12),
+    slotProducts(rt, "featured", s, 12, locale),
+    slotProducts(rt, "new", s, 12, locale),
+    slotProducts(rt, "offers", s, 12, locale),
+    slotProducts(rt, "bestseller", s, 12, locale),
   ]);
   const [autoNew, autoOffers, autoBest] = await Promise.all([
-    curatedNew.length ? [] : autoProducts(rt, s, sql`p.first_seen_at IS NOT NULL`, sql`p.first_seen_at DESC`, 12),
-    curatedOffers.length ? [] : autoProducts(rt, s, sql`p.old_price IS NOT NULL AND p.old_price > p.price`, sql`(p.available_qty > 0) DESC, (p.old_price - p.price) * 100 / p.old_price DESC`, 12),
-    curatedBest.length ? [] : autoProducts(rt, s, sql`p.popularity > 0`, sql`p.popularity DESC`, 12),
+    curatedNew.length ? [] : autoProducts(rt, s, sql`p.first_seen_at IS NOT NULL`, sql`p.first_seen_at DESC`, 12, locale),
+    curatedOffers.length ? [] : autoProducts(rt, s, sql`p.old_price IS NOT NULL AND p.old_price > p.price`, sql`(p.available_qty > 0) DESC, (p.old_price - p.price) * 100 / p.old_price DESC`, 12, locale),
+    curatedBest.length ? [] : autoProducts(rt, s, sql`p.popularity > 0`, sql`p.popularity DESC`, 12, locale),
   ]);
   const { tree } = await categoryTree(rt, locale);
   return {

@@ -37,7 +37,7 @@ export default async function ProductPage({ params }: Props) {
   const { locale, slug } = await params;
   if (!isLocale(locale)) notFound();
   const product = await load(locale, slug);
-  const related = await getRelated(product.id).catch(() => []);
+  const related = await getRelated(product.id, locale).catch(() => []);
   const m = getMessages(locale);
   const origin = process.env.PUBLIC_URL ?? "http://localhost:3000";
 

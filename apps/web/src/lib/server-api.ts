@@ -40,6 +40,6 @@ export const getCategories = (locale: Locale, opts: { includeEmpty?: boolean } =
 export const getBrands = () => api<BrandDTO[]>("/v1/brands", { revalidate: 120 });
 export const getCatalog = (query: URLSearchParams) => api<CatalogPage>(`/v1/catalog/products?${query.toString()}`, { revalidate: 30 });
 export const getProduct = (slug: string, locale: Locale) => apiOrNull<ProductDetail | { redirectTo: string }>(`/v1/products/${encodeURIComponent(slug)}?locale=${locale}`, { revalidate: 60 });
-export const getRelated = (id: string) => api<ProductCardData[]>(`/v1/products/${id}/related`, { revalidate: 120 });
+export const getRelated = (id: string, locale: Locale) => api<ProductCardData[]>(`/v1/products/${id}/related?locale=${locale}`, { revalidate: 120 });
 export const getCategory = (slug: string, locale: Locale) =>
   apiOrNull<{ node: CategoryNode; path: { slug: string; name: string }[] }>(`/v1/categories/${encodeURIComponent(slug)}?locale=${locale}`, { revalidate: 60 });

@@ -1,6 +1,6 @@
 "use client";
 
-import type { ProductCardData } from "@shop/shared";
+import type { Locale, ProductCardData } from "@shop/shared";
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 export interface CartLine {
@@ -128,8 +128,8 @@ export function useCart() {
   return { lines: current, count: current.length, quantityOf, setQuantity, clear: clearCart };
 }
 
-/** Fresh prices and stock for what is in the cart. The browser stores only ids and quantities; it never remembers a price. */
-export function useCartProducts(cartLines: CartLine[]) {
+/** Fresh prices and stock for what is in the cart. The browser stores only ids and quantities; it never remembers a price. Names come in `locale`. */
+export function useCartProducts(cartLines: CartLine[], locale: Locale) {
   const key = cartLines.map((l) => l.productId).sort().join(",");
   const [state, setState] = useState<{ products: Map<string, ProductCardData>; loading: boolean; error: boolean }>({ products: new Map(), loading: key.length > 0, error: false });
   const [nonce, setNonce] = useState(0);
@@ -142,14 +142,14 @@ export function useCartProducts(cartLines: CartLine[]) {
     }
     let cancelled = false;
     setState((s) => ({ ...s, loading: true, error: false }));
-    fetch("/api/v1/products/by-ids", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids: key.split(",") }) })
+    fetch(`/api/v1/products/by-ids?locale=${locale}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids: key.split(",") }) })
       .then((r) => (r.ok ? (r.json() as Promise<ProductCardData[]>) : Promise.reject(new Error(String(r.status)))))
       .then((list) => !cancelled && setState({ products: new Map(list.map((p) => [p.id, p])), loading: false, error: false }))
       .catch(() => !cancelled && setState((s) => ({ ...s, loading: false, error: true })));
     return () => {
       cancelled = true;
     };
-  }, [key, nonce]);
+  }, [key, nonce, locale]);
 
   const reload = useCallback(() => setNonce((n) => n + 1), []);
   return useMemo(() => ({ ...state, reload }), [state, reload]);

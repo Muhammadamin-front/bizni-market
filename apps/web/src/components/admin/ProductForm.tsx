@@ -22,9 +22,11 @@ import { Badge, Card, Field, Notice, btn, btnPrimary, input } from "./ui";
 
 interface FormState {
   name: string;
+  nameRu: string;
   categoryId: string;
   brand: string;
   description: string;
+  descriptionRu: string;
   price: string;
   oldPrice: string;
   availableQty: string;
@@ -36,14 +38,16 @@ interface FormState {
   hidden: boolean;
 }
 
-const EMPTY: FormState = { name: "", categoryId: "", brand: "", description: "", price: "", oldPrice: "", availableQty: "", uom: "dona", qtyStep: "", packSize: "", article: "", barcodes: "", hidden: false };
+const EMPTY: FormState = { name: "", nameRu: "", categoryId: "", brand: "", description: "", descriptionRu: "", price: "", oldPrice: "", availableQty: "", uom: "dona", qtyStep: "", packSize: "", article: "", barcodes: "", hidden: false };
 
 function fromDetail(d: AdminProductDetail): FormState {
   return {
     name: d.name,
+    nameRu: d.nameRu,
     categoryId: d.categoryId ?? "",
     brand: d.brand,
     description: d.description,
+    descriptionRu: d.descriptionRu,
     price: d.price ? String(d.price) : "",
     oldPrice: d.oldPrice ? String(d.oldPrice) : "",
     availableQty: String(d.availableQty),
@@ -61,9 +65,11 @@ const num = (v: string) => (v.trim() === "" ? null : Number(v.replace(",", ".").
 function toInput(f: FormState) {
   return {
     name: f.name,
+    nameRu: f.nameRu,
     categoryId: f.categoryId || null,
     brand: f.brand,
     description: f.description,
+    descriptionRu: f.descriptionRu,
     price: num(f.price) ?? 0,
     oldPrice: num(f.oldPrice),
     availableQty: num(f.availableQty) ?? 0,
@@ -77,7 +83,8 @@ function toInput(f: FormState) {
 }
 
 const FIELD_ERRORS: Record<string, L> = {
-  name: { ru: "Название: от 2 символов.", uz: "Nomi: kamida 2 belgi." },
+  name: { ru: "Название по-узбекски: от 2 символов.", uz: "Oʻzbekcha nomi: kamida 2 belgi." },
+  nameRu: { ru: "Название по-русски: до 200 символов.", uz: "Ruscha nomi: 200 belgigacha." },
   price: { ru: "Цена: целое число сумов, без копеек.", uz: "Narx: butun son, soʻmda, tiyinsiz." },
   oldPrice: { ru: "Старая цена должна быть больше текущей — иначе это не скидка.", uz: "Eski narx hozirgidan katta boʻlishi kerak, aks holda bu chegirma emas." },
   availableQty: { ru: "Остаток: число от 0.", uz: "Qoldiq: 0 yoki undan katta son." },
@@ -86,6 +93,7 @@ const FIELD_ERRORS: Record<string, L> = {
   barcodes: { ru: "Штрихкоды: только цифры и латинские буквы, 4–32 символа, через запятую.", uz: "Shtrixkodlar: faqat raqam va lotin harflari, 4–32 belgi, vergul bilan." },
   article: { ru: "Артикул: до 64 символов.", uz: "Artikul: 64 belgigacha." },
   description: { ru: "Описание: до 5000 символов.", uz: "Tavsif: 5000 belgigacha." },
+  descriptionRu: { ru: "Описание по-русски: до 5000 символов.", uz: "Ruscha tavsif: 5000 belgigacha." },
   brand: { ru: "Бренд: до 80 символов.", uz: "Brend: 80 belgigacha." },
   uom: { ru: "Единица: до 16 символов.", uz: "Birlik: 16 belgigacha." },
 };
@@ -485,7 +493,7 @@ export function ProductForm({ initial }: { initial?: AdminProductDetail }) {
     return {
       id: "preview",
       slug: "",
-      name: form.name || t("Название товара", "Tovar nomi"),
+      name: (t.lang === "ru" ? form.nameRu.trim() || form.name : form.name) || t("Название товара", "Tovar nomi"),
       article: form.article,
       brand: form.brand.trim() || null,
       price,
@@ -542,10 +550,22 @@ export function ProductForm({ initial }: { initial?: AdminProductDetail }) {
           </Section>
 
           <Section title={t("Основное", "Asosiy maʼlumot")}>
-            <Field label={t("Название *", "Nomi *")} hint={t("Так, как его ищут покупатели: что это, марка, размер/вес. Например: «Daftar 48 varaq, katak».", "Xaridorlar qanday qidirsa, shunday yozing: nima ekani, markasi, oʻlchami yoki ogʻirligi. Masalan: «Daftar 48 varaq, katak».")}>
-              <input id="f-name" className={`${input} ${errors.name ? "border-promo" : ""}`} value={form.name} onChange={(e) => set("name", e.target.value)} maxLength={200} autoFocus={isNew} />
-              <Err text={errors.name} />
-            </Field>
+            <p className="text-caption text-ink-2">
+              {t(
+                "Название и описание вводятся на двух языках: узбекский — для сайта /uz и Mini App на узбекском, русский — для /ru и Mini App на русском. Если русское поле пустое, там покажется узбекский текст.",
+                "Nomi va tavsif ikki tilda kiritiladi: oʻzbekchasi /uz sayt va oʻzbekcha Mini App uchun, ruschasi /ru sayt va ruscha Mini App uchun. Ruscha maydon boʻsh qolsa, u yerda oʻzbekcha matn chiqadi.",
+              )}
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label={t("Название (узбекский) *", "Nomi (oʻzbekcha) *")} hint={t("Так, как его ищут покупатели: что это, марка, размер/вес. Например: «Daftar 48 varaq, katak».", "Xaridorlar qanday qidirsa, shunday yozing: nima ekani, markasi, oʻlchami yoki ogʻirligi. Masalan: «Daftar 48 varaq, katak».")}>
+                <input id="f-name" lang="uz" className={`${input} ${errors.name ? "border-promo" : ""}`} value={form.name} onChange={(e) => set("name", e.target.value)} maxLength={200} autoFocus={isNew} />
+                <Err text={errors.name} />
+              </Field>
+              <Field label={t("Название (русский)", "Nomi (ruscha)")} hint={t("Например: «Тетрадь 48 листов, клетка». Пусто — на русском сайте будет узбекское название.", "Masalan: «Тетрадь 48 листов, клетка». Boʻsh qolsa, ruscha saytda oʻzbekcha nomi chiqadi.")}>
+                <input id="f-nameRu" lang="ru" className={`${input} ${errors.nameRu ? "border-promo" : ""}`} value={form.nameRu} onChange={(e) => set("nameRu", e.target.value)} maxLength={200} />
+                <Err text={errors.nameRu} />
+              </Field>
+            </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="flex flex-col gap-1 text-small">
                 <label htmlFor="f-category" className="font-medium">{t("Категория", "Kategoriya")}</label>
@@ -556,10 +576,16 @@ export function ProductForm({ initial }: { initial?: AdminProductDetail }) {
                 <datalist id="brand-list">{brands?.map((b) => <option key={b} value={b} />)}</datalist>
               </Field>
             </div>
-            <Field label={t("Описание", "Tavsif")} hint={t("Необязательно. Показывается на странице товара.", "Ixtiyoriy. Tovar sahifasida koʻrsatiladi.")}>
-              <textarea id="f-description" className="min-h-28 rounded-control border border-line bg-card p-2.5 text-small hover:border-line-strong focus:border-action focus:outline-none" value={form.description} onChange={(e) => set("description", e.target.value)} maxLength={5000} />
-              <Err text={errors.description} />
-            </Field>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label={t("Описание (узбекский)", "Tavsif (oʻzbekcha)")} hint={t("Необязательно. Показывается на странице товара.", "Ixtiyoriy. Tovar sahifasida koʻrsatiladi.")}>
+                <textarea id="f-description" lang="uz" className="min-h-28 rounded-control border border-line bg-card p-2.5 text-small hover:border-line-strong focus:border-action focus:outline-none" value={form.description} onChange={(e) => set("description", e.target.value)} maxLength={5000} />
+                <Err text={errors.description} />
+              </Field>
+              <Field label={t("Описание (русский)", "Tavsif (ruscha)")} hint={t("Необязательно. Пусто — на русском сайте будет узбекское описание.", "Ixtiyoriy. Boʻsh qolsa, ruscha saytda oʻzbekcha tavsif chiqadi.")}>
+                <textarea id="f-descriptionRu" lang="ru" className="min-h-28 rounded-control border border-line bg-card p-2.5 text-small hover:border-line-strong focus:border-action focus:outline-none" value={form.descriptionRu} onChange={(e) => set("descriptionRu", e.target.value)} maxLength={5000} />
+                <Err text={errors.descriptionRu} />
+              </Field>
+            </div>
           </Section>
 
           <Section title={t("Цена и наличие", "Narx va qoldiq")}>

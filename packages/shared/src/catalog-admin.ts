@@ -6,10 +6,15 @@ import { z } from "zod";
  */
 export const ManualProductInput = z
   .object({
+    /** The main name, in Uzbek (required). */
     name: z.string().trim().min(2, "name_short").max(200),
+    /** Russian name for the /ru site and the Russian Mini App. Empty = the Uzbek name is shown there. */
+    nameRu: z.string().trim().max(200).default(""),
     article: z.string().trim().max(64).default(""),
     barcodes: z.array(z.string().trim().min(4).max(32).regex(/^[0-9A-Za-z-]+$/, "barcode_chars")).max(10).default([]),
     description: z.string().trim().max(5000).default(""),
+    /** Russian description. Empty = the Uzbek description is shown. */
+    descriptionRu: z.string().trim().max(5000).default(""),
     categoryId: z.uuid().nullable().default(null),
     /** Free text: an existing brand is reused (case-insensitive), a new one is created. Empty = no brand. */
     brand: z.string().trim().max(80).default(""),
@@ -68,9 +73,11 @@ export interface AdminProductDetail {
   source: "manual" | "moysklad";
   slug: string;
   name: string;
+  nameRu: string;
   article: string;
   barcodes: string[];
   description: string;
+  descriptionRu: string;
   categoryId: string | null;
   brand: string;
   uom: string;

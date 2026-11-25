@@ -122,14 +122,19 @@ export const products = pgTable(
     source: text("source").notNull().default("moysklad"),
     msType: text("ms_type").notNull().default("product"),
     slug: text("slug").notNull().unique(),
+    /** The main (Uzbek) name: the slug, the admin, order lines and staff messages use it. */
     name: text("name").notNull(),
-    /** Normalised skeleton used for Latin/Cyrillic-tolerant search. See shared/search.ts. */
+    /** The owner's Russian name for the /ru site and the Mini App in Russian. Empty = the main name is shown. Never set by MoySklad sync. */
+    nameRu: text("name_ru").notNull().default(""),
+    /** Normalised skeleton used for Latin/Cyrillic-tolerant search (both names and the brand). See shared/search.ts. */
     nameSearch: text("name_search").notNull().default(""),
     article: text("article").notNull().default(""),
     code: text("code").notNull().default(""),
     externalCode: text("external_code").notNull().default(""),
     barcodes: text("barcodes").array().notNull().default(sql`'{}'::text[]`),
     description: text("description").notNull().default(""),
+    /** Russian description; empty = the main description is shown. */
+    descriptionRu: text("description_ru").notNull().default(""),
     categoryId: uuid("category_id").references(() => categories.id, { onDelete: "set null" }),
     brandId: uuid("brand_id").references(() => brands.id, { onDelete: "set null" }),
     uom: text("uom"),

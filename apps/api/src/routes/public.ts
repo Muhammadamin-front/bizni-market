@@ -47,13 +47,13 @@ export function publicRoutes(app: FastifyInstance, rt: Runtime) {
 
   app.get("/v1/products/:id/related", async (req) => {
     const id = z.uuid().parse((req.params as { id: string }).id);
-    return relatedProducts(rt, id);
+    return relatedProducts(rt, id, Locale.parse((req.query as { locale?: string }).locale));
   });
 
   // Cart hydration: the browser keeps only ids and quantities, and asks for fresh prices and stock here.
   app.post("/v1/products/by-ids", async (req) => {
     const { ids } = z.object({ ids: z.array(z.uuid()).max(100) }).parse(req.body);
-    return productsByIds(rt, ids);
+    return productsByIds(rt, ids, Locale.parse((req.query as { locale?: string }).locale));
   });
 
   app.get("/v1/search/suggest", { preHandler: limitBy(rt, "suggest", 120, 60) }, async (req) => {

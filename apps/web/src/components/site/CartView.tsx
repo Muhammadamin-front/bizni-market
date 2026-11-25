@@ -27,7 +27,7 @@ export function resolveLines(lines: CartLine[], products: Map<string, ProductCar
 export function CartView({ checkoutHref }: { checkoutHref: string }) {
   const { locale, messages, href } = useI18n();
   const { lines, setQuantity } = useCart();
-  const { products, loading, error, reload } = useCartProducts(lines);
+  const { products, loading, error, reload } = useCartProducts(lines, locale);
   const m = messages.cart;
   const loaded = !loading && !error;
   const rows = resolveLines(lines, products, loaded);

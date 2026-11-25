@@ -208,7 +208,7 @@ export function adminRoutes(app: FastifyInstance, rt: Runtime) {
     const where = [];
     if (q.q) {
       const like = `%${q.q.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
-      where.push(sql`(p.name ILIKE ${like} OR p.article ILIKE ${like} OR p.code ILIKE ${like} OR p.name_search ILIKE ${`%${normalizeSearch(q.q)}%`} OR ${q.q.trim()} = ANY(p.barcodes))`);
+      where.push(sql`(p.name ILIKE ${like} OR p.name_ru ILIKE ${like} OR p.article ILIKE ${like} OR p.code ILIKE ${like} OR p.name_search ILIKE ${`%${normalizeSearch(q.q)}%`} OR ${q.q.trim()} = ANY(p.barcodes))`);
     }
     if (q.filter === "hidden") where.push(sql`COALESCE(o.hidden,false)`);
     if (q.filter === "no_image") where.push(sql`NOT EXISTS (SELECT 1 FROM product_images i WHERE i.product_id = p.id AND i.status = 'ready')`);

@@ -9,9 +9,9 @@ import { useTma } from "@/lib/tma";
 import { useFetch } from "@/lib/use-fetch";
 
 export default function TmaFavorites() {
-  const { messages: m } = useI18n();
+  const { locale, messages: m } = useI18n();
   const { token } = useTma();
-  const { data, loading } = useFetch<ProductCardData[]>(token ? "/api/v1/favorites" : null, token ? { Authorization: `Bearer ${token}` } : undefined);
+  const { data, loading } = useFetch<ProductCardData[]>(token ? `/api/v1/favorites?locale=${locale}` : null, token ? { Authorization: `Bearer ${token}` } : undefined);
   if (loading && !data) return <Skeleton className="h-40" />;
   if (!data?.length) return <EmptyState icon={<Heart className="size-7" strokeWidth={1.5} />} title={m.nav.favorites} body={m.product.favorite} />;
   return (

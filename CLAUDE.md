@@ -39,7 +39,8 @@ Bot texts changed? Admin → Tizim → "Botni sozlash" re-applies descriptions/m
 ## What the owner can change in /admin (so it is not hard-coded)
 Shop name, home title/text, bot welcome/descriptions, contacts, pages (Sayt matnlari); categories with their own pictures
 (Kategoriyalar; without one: product photos, then a default icon picture); products (edit/delete per row, bulk delete,
-"delete all products"); orders: cancelled ones can be deleted for good (per order, or all cancelled at once); banners;
+"delete all products"; name and description in Uzbek (required, the slug comes from it) and Russian (optional, columns
+`name_ru`/`description_ru`; empty = /ru shows the Uzbek text; order lines and stats keep the Uzbek name)); orders: cancelled ones can be deleted for good (per order, or all cancelled at once); banners;
 admin password (Tizim → Xavfsizlik).
 Whole-site control: Barcha matnlar (`/admin/texts`: every plain UI text of the site and the Mini App, stored as content blocks `t.<path>`),
 Sayt dizayni (`/admin/site`: logo, accent/background colours `theme.*`, show/hide home sections `home.show.*`), Statistika (`/admin/stats`).

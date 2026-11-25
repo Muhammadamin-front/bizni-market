@@ -43,7 +43,7 @@ export function CheckoutForm({ token, orderPrefix, cartHref, prefill }: { token?
   const m = messages.checkout;
   const config = usePublicConfig();
   const { lines } = useCart();
-  const { products, loading } = useCartProducts(lines);
+  const { products, loading } = useCartProducts(lines, locale);
   const rows = resolveLines(lines, products, !loading);
   const sellable = rows.filter((r) => r.product && !r.unavailable);
   const total = sellable.reduce((s, r) => s + lineTotal(r.product!, r.line.quantity), 0);

@@ -370,6 +370,19 @@ describe("admin API", () => {
     expect(edited.statusCode).toBe(200);
     expect(json(edited)).toMatchObject({ name: "Qalam HB (12 dona)", oldPrice: 16000, brand: "" });
 
+    // Russian name and description: kept by the admin, shown on /ru (product, cart, similar), Uzbek stays the default.
+    const ru = await w.app.inject({ method: "PUT", url: `/v1/admin/products/${p.id}`, headers: hdr(), payload: { name: "Qalam HB", nameRu: "Карандаш HB", description: "Yumshoq grafit.", descriptionRu: "Мягкий грифель.", price: 14000, availableQty: 5 } });
+    expect(ru.statusCode).toBe(200);
+    expect(json(ru)).toMatchObject({ name: "Qalam HB", nameRu: "Карандаш HB", description: "Yumshoq grafit.", descriptionRu: "Мягкий грифель." });
+    const slug = json(ru).slug;
+    expect(json(await get(`/v1/products/${slug}?locale=ru`))).toMatchObject({ name: "Карандаш HB", description: "Мягкий грифель." });
+    expect(json(await get(`/v1/products/${slug}?locale=uz`))).toMatchObject({ name: "Qalam HB", description: "Yumshoq grafit." });
+    expect(json(await post("/v1/products/by-ids?locale=ru", { ids: [p.id] })).map((x: { name: string }) => x.name)).toEqual(["Карандаш HB"]);
+    expect(json(await post("/v1/products/by-ids", { ids: [p.id] })).map((x: { name: string }) => x.name)).toEqual(["Qalam HB"]);
+    expect(json(await get("/v1/catalog/products?locale=ru&q=карандаш")).items.map((x: { name: string }) => x.name)).toEqual(["Карандаш HB"]);
+    expect((await get(`/v1/products/${p.id}/related?locale=ru`)).statusCode).toBe(200);
+    expect(json(await get("/v1/admin/products?q=Карандаш", hdr())).rows.map((r: { id: string }) => r.id)).toEqual([p.id]);
+
     const list = json(await get("/v1/admin/products?filter=manual", hdr()));
     expect(list.rows.map((r: { id: string }) => r.id)).toContain(p.id);
     expect(list.rows.find((r: { id: string }) => r.id === p.id).thumb).toMatch(/^\/media\/.+-160\.webp$/);

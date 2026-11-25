@@ -18,7 +18,7 @@ export default function TmaProduct({ params }: { params: Promise<{ slug: string 
   const router = useRouter();
   const { data, loading, error } = useFetch<ProductDetail | { redirectTo: string }>(`/api/v1/products/${encodeURIComponent(slug)}?locale=${locale}`);
   const product = data && !("redirectTo" in data) ? data : null;
-  const related = useFetch<ProductCardData[]>(product ? `/api/v1/products/${product.id}/related` : null);
+  const related = useFetch<ProductCardData[]>(product ? `/api/v1/products/${product.id}/related?locale=${locale}` : null);
 
   useEffect(() => {
     if (data && "redirectTo" in data) router.replace(href(`/p/${data.redirectTo}`));
