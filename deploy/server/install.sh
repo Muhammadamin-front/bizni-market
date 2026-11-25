@@ -208,7 +208,11 @@ cmd_check() {
   curl -fsS -o /dev/null --max-time 5 "http://127.0.0.1:$API_PORT/ready" && echo "api ready: yes" || { echo "api ready: NO"; ok=0; }
   curl -fsS -o /dev/null --max-time 5 "http://$(web_host):$WEB_PORT/uz" && echo "site /uz: yes" || { echo "site /uz: NO"; ok=0; }
   echo "listening (ours):"; ss -ltnH "( sport = :$WEB_PORT or sport = :$API_PORT )" | awk '{print "  " $4}'
-  ss -ltnH "( sport = :$WEB_PORT or sport = :$API_PORT )" | awk '{print $4}' | grep -qvE '^(127\.0\.0\.1|\[::1\]):' && { echo "WARNING: something of ours listens beyond loopback"; ok=0; }
+  # Loopback, plus the web unit's own HOSTNAME (on Contabo the Docker gateway 172.19.0.1, so Caddy in Docker can reach it).
+  # A wildcard address is never accepted.
+  local wh; wh="$(web_host)"; case "$wh" in 0.0.0.0|::|"*"|"") wh=127.0.0.1 ;; esac
+  ss -ltnH "( sport = :$WEB_PORT or sport = :$API_PORT )" | awk '{print $4}' | grep -vE '^(127\.0\.0\.1|\[::1\]):' | grep -vxF "$wh:$WEB_PORT" | grep -q . \
+    && { echo "WARNING: something of ours listens beyond loopback / the web host ($wh)"; ok=0; }
   [ $ok = 1 ] && echo "ALL OK" || { echo "PROBLEMS - see above"; return 1; }
 }
 
