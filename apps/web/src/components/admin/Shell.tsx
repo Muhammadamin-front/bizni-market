@@ -3,17 +3,16 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
-import { AiNavLabel } from "./ai";
+import { AiTopButton } from "./ai";
 import { adminFetch } from "./api";
 import { useShopName } from "./brand";
 import { LangSwitch, useT, type L } from "./i18n";
 import { btnPrimary, Field, input, Notice, PasswordInput } from "./ui";
 
-const NAV: { href: string; label: L; moysklad?: boolean; ai?: boolean }[] = [
+const NAV: { href: string; label: L; moysklad?: boolean }[] = [
   { href: "/admin", label: { ru: "Обзор", uz: "Umumiy holat" } },
   { href: "/admin/orders", label: { ru: "Заказы", uz: "Buyurtmalar" } },
   { href: "/admin/stats", label: { ru: "Статистика", uz: "Statistika" } },
-  { href: "/admin/ai", label: { ru: "AI-помощник", uz: "AI yordamchi" }, ai: true },
   { href: "/admin/products", label: { ru: "Товары", uz: "Tovarlar" } },
   { href: "/admin/categories", label: { ru: "Категории", uz: "Kategoriyalar" } },
   { href: "/admin/content", label: { ru: "Контент", uz: "Sayt matnlari" } },
@@ -66,7 +65,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             const active = n.href === "/admin" ? pathname === "/admin" : pathname.startsWith(n.href);
             return (
               <Link key={n.href} href={n.href} aria-current={active ? "page" : undefined} className={`shrink-0 rounded-control px-3 py-2 text-small font-medium ${active ? "bg-ink text-on-ink" : "text-ink-2 hover:bg-sunken hover:text-ink"}`}>
-                {n.ai ? <AiNavLabel /> : n.label[t.lang]}
+                {n.label[t.lang]}
               </Link>
             );
           })}
@@ -82,7 +81,13 @@ export function AdminShell({ children }: { children: ReactNode }) {
           </button>
         </nav>
       </aside>
-      <main className="min-w-0 p-4 lg:p-6">{children}</main>
+      <div className="min-w-0">
+        {/* The AI assistant sits in the top bar, top right, where it is seen on every page. */}
+        <header className="sticky top-0 z-20 flex items-center justify-end border-b border-line bg-card/95 px-4 py-2 backdrop-blur lg:px-6">
+          <AiTopButton />
+        </header>
+        <main className="p-4 lg:p-6">{children}</main>
+      </div>
     </div>
   );
 }

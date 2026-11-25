@@ -3,6 +3,7 @@
 import type { AiStatus } from "@shop/shared";
 import { Languages, Lock, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { adminFetch, fmtMoney } from "./api";
 import { useT, type T } from "./i18n";
@@ -143,20 +144,29 @@ export function AiUsageMeter({ s }: { s: AiStatus }) {
   );
 }
 
-/** Menu entry: a lock while the add-on is closed, the share of the month's tokens used once it is open. */
-export function AiNavLabel() {
+/**
+ * The top-right button of the admin bar: an accent-coloured "AI yordamchi" that is seen on every page. A lock while the add-on
+ * is closed (it opens the page with the price), the share of this month's tokens used once it is open.
+ */
+export function AiTopButton() {
   const t = useT();
   const s = useAiStatus();
+  const pathname = usePathname();
+  const open = !!s?.enabled;
   const pct = s && s.limit > 0 ? Math.min(100, Math.round((s.used / s.limit) * 100)) : null;
+  const here = pathname.startsWith("/admin/ai");
   return (
-    <span className="inline-flex items-center gap-1.5">
-      {t("AI-помощник", "AI yordamchi")}
-      {!s ? null : !s.enabled ? (
-        <Lock aria-label={t("закрыт", "qulflangan")} className="size-3.5" />
-      ) : pct !== null ? (
-        <span className="tnum text-caption opacity-80" title={t("Расход лимита AI в этом месяце", "Bu oylik AI limitidan sarflangani")}>{pct}%</span>
-      ) : null}
-    </span>
+    <Link
+      href="/admin/ai"
+      aria-current={here ? "page" : undefined}
+      title={open ? t("Расход лимита AI в этом месяце", "Bu oylik AI limitidan sarflangani") : t("AI-помощник закрыт — нажмите, чтобы увидеть цену", "AI yordamchi qulflangan — narxini koʻrish uchun bosing")}
+      className={`inline-flex h-10 items-center gap-2 rounded-control bg-action px-4 text-small font-bold text-white shadow-sm hover:bg-action-press ${here ? "ring-2 ring-action/40 ring-offset-2" : ""}`}
+    >
+      <Sparkles aria-hidden className="size-4" />
+      <span>{t("AI-помощник", "AI yordamchi")}</span>
+      {s && !open ? <Lock aria-label={t("закрыт", "qulflangan")} className="size-4" /> : null}
+      {open && pct !== null ? <span className="tnum rounded-full bg-white/20 px-1.5 py-0.5 text-caption font-semibold">{pct}%</span> : null}
+    </Link>
   );
 }
 

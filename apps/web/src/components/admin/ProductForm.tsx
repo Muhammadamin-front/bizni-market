@@ -638,7 +638,7 @@ export function ProductForm({ initial }: { initial?: AdminProductDetail }) {
           </Section>
         </div>
 
-        <aside className="flex flex-col gap-3 lg:sticky lg:top-4">
+        <aside className="flex flex-col gap-3 lg:sticky lg:top-16">
           <Card>
             <p className="mb-2 text-small font-semibold">{t("Так увидят покупатели", "Xaridorlar shunday koʻradi")}</p>
             <p className="mb-3 text-caption text-ink-2">{t("Сайт и Telegram Mini App — одна и та же карточка.", "Sayt va Telegram Mini App'da bir xil kartochka.")}</p>
