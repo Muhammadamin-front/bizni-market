@@ -82,7 +82,6 @@ interface Call<T> {
   prompt: string;
   json?: boolean;
   maxOutputTokens: number;
-  temperature?: number;
   /** Turns the model's text into the result; throwing marks the call as failed (its tokens still count). */
   parse: (text: string, finishReason: string) => T;
 }
@@ -98,7 +97,8 @@ async function gemini<T>(rt: Rt, adminId: string | null, call: Call<T>): Promise
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: call.system }] },
         contents: [{ role: "user", parts: [{ text: call.prompt }] }],
-        generationConfig: { maxOutputTokens: call.maxOutputTokens, temperature: call.temperature ?? 0.4, ...(call.json ? { responseMimeType: "application/json" } : {}) },
+        // No temperature: Gemini 3 models are tuned for their default, and lower values can make them loop.
+        generationConfig: { maxOutputTokens: call.maxOutputTokens, ...(call.json ? { responseMimeType: "application/json" } : {}) },
       }),
       signal: AbortSignal.timeout(CALL_TIMEOUT_MS),
     });
@@ -191,7 +191,6 @@ export async function aiDescribe(rt: Rt, adminId: string | null, input: AiDescri
     feature: "describe",
     json: true,
     maxOutputTokens: 4096,
-    temperature: 0.6,
     system: [
       `You write product descriptions for an online shop in Uzbekistan (sections: ${sections}).`,
       "Write one helpful, factual description for the product page, in Uzbek and in Russian with the same content.",
@@ -225,7 +224,6 @@ export async function aiTranslate(rt: Rt, adminId: string | null, input: AiTrans
     feature: "translate",
     json: true,
     maxOutputTokens: 8192,
-    temperature: 0.2,
     system: [
       "You translate product texts for an online shop in Uzbekistan. The admin wrote a product name and/or description in Uzbek or Russian (sometimes mixed, with typos).",
       "Give the same text in both Uzbek and Russian.",
@@ -306,7 +304,6 @@ export async function aiAdvice(rt: Rt, adminId: string | null, input: AiAdviceIn
   const text = await gemini(rt, adminId, {
     feature: "advice",
     maxOutputTokens: 4096,
-    temperature: 0.6,
     system: [
       `You are a practical e-commerce adviser for the owner of a small online shop in Uzbekistan (sections: ${sections}).`,
       "The owner manages everything in an admin panel: products, categories, banners, site texts and design, orders, statistics, and a Telegram bot with a Mini App.",

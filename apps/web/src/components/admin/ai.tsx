@@ -153,9 +153,9 @@ export function AiNavLabel() {
       {t("AI-помощник", "AI yordamchi")}
       {!s ? null : !s.enabled ? (
         <Lock aria-label={t("закрыт", "qulflangan")} className="size-3.5" />
-      ) : (
+      ) : pct !== null ? (
         <span className="tnum text-caption opacity-80" title={t("Расход лимита AI в этом месяце", "Bu oylik AI limitidan sarflangani")}>{pct}%</span>
-      )}
+      ) : null}
     </span>
   );
 }
@@ -204,19 +204,26 @@ export function AiProductTools({ form, apply }: { form: Texts; apply: (patch: Pa
       apply({ description: r.data.uz, descriptionRu: r.data.ru });
       return setNote({ tone: "ok", text: t("AI написал описание на двух языках. Проверьте и сохраните.", "AI ikki tilda tavsif yozdi. Tekshirib, keyin saqlang.") });
     }
-    const name = (form.name || form.nameRu).trim();
-    const description = (form.description || form.descriptionRu).trim();
-    if (!name && !description) return setNote({ tone: "bad", text: t("Сначала введите название или описание (на любом языке).", "Avval nom yoki tavsif yozing (istalgan tilda).") });
-    const both = (form.name.trim() && form.nameRu.trim()) || (form.description.trim() && form.descriptionRu.trim());
-    if (both && !window.confirm(t("Русские поля будут переписаны переводом с узбекского (можно отменить). Продолжить?", "Ruscha maydonlar oʻzbekchadan tarjima bilan qayta yoziladi (bekor qilsa boʻladi). Davom etilsinmi?"))) return;
+    // The admin's own text is the source and is never rewritten (the Uzbek name also makes the link): only the other
+    // language is written. Uzbek filled -> Russian is written; only Russian filled -> Uzbek is written.
+    const nameTo: keyof Patch | null = form.name.trim() ? "nameRu" : form.nameRu.trim() ? "name" : null;
+    const descriptionTo: keyof Patch | null = form.description.trim() ? "descriptionRu" : form.descriptionRu.trim() ? "description" : null;
+    if (!nameTo && !descriptionTo) return setNote({ tone: "bad", text: t("Сначала введите название или описание (на любом языке).", "Avval nom yoki tavsif yozing (istalgan tilda).") });
+    const targets = [nameTo, descriptionTo].filter((k): k is keyof Patch => !!k);
+    if (targets.some((k) => form[k].trim()) && !window.confirm(t("Русские поля будут заменены переводом вашего узбекского текста (можно отменить). Продолжить?", "Ruscha maydonlar oʻzbekcha matningiz tarjimasi bilan almashtiriladi (bekor qilsa boʻladi). Davom etilsinmi?"))) return;
     setBusy(kind);
-    const r = await aiCall<{ name: { uz: string; ru: string }; description: { uz: string; ru: string } }>("translate", { name, description }, t);
+    const source = (to: keyof Patch | null, uz: string, ru: string) => (to === null ? "" : to.endsWith("Ru") ? uz : ru);
+    const r = await aiCall<{ name: { uz: string; ru: string }; description: { uz: string; ru: string } }>(
+      "translate",
+      { name: source(nameTo, form.name, form.nameRu), description: source(descriptionTo, form.description, form.descriptionRu) },
+      t,
+    );
     setBusy(null);
     if (!r.ok) return setNote({ tone: "bad", text: r.message });
     const patch: Patch = {};
-    if (name) Object.assign(patch, { name: r.data.name.uz, nameRu: r.data.name.ru });
-    if (description) Object.assign(patch, { description: r.data.description.uz, descriptionRu: r.data.description.ru });
-    setUndo(Object.fromEntries(Object.keys(patch).map((k) => [k, form[k as keyof Patch]])) as Patch);
+    if (nameTo) patch[nameTo] = nameTo === "nameRu" ? r.data.name.ru : r.data.name.uz;
+    if (descriptionTo) patch[descriptionTo] = descriptionTo === "descriptionRu" ? r.data.description.ru : r.data.description.uz;
+    setUndo(Object.fromEntries(targets.map((k) => [k, form[k]])) as Patch);
     apply(patch);
     setNote({ tone: "ok", text: t("Готово: текст на узбекском и русском. Проверьте и сохраните.", "Tayyor: matn oʻzbekcha va ruscha. Tekshirib, keyin saqlang.") });
   };
@@ -250,8 +257,8 @@ export function AiProductTools({ form, apply }: { form: Texts; apply: (patch: Pa
       </div>
       <p className="text-caption text-ink-2">
         {t(
-          "«Написать описание» — по названию, бренду и вашим заметкам в полях описания. «На два языка» — переводит то, что вы написали, на узбекский и русский. AI только заполняет поля, сохраняете вы.",
-          "«Tavsif yozish» — nomi, brendi va tavsif maydonidagi qaydlaringiz asosida. «Ikki tilga yozish» — siz yozgan matnni oʻzbekcha va ruschaga oʻgiradi. AI faqat maydonlarni toʻldiradi, saqlashni oʻzingiz bosasiz.",
+          "«Написать описание» — по названию, бренду и вашим заметкам в полях описания. «На два языка» — переводит ваш текст на другой язык (узбекский → русский, или русский → узбекский, если узбекское поле пустое); ваш текст не меняется. AI только заполняет поля, сохраняете вы.",
+          "«Tavsif yozish» — nomi, brendi va tavsif maydonidagi qaydlaringiz asosida. «Ikki tilga yozish» — yozgan matningizni ikkinchi tilga oʻgiradi (oʻzbekchadan ruschaga, oʻzbekcha maydon boʻsh boʻlsa ruschadan oʻzbekchaga); oʻzingiz yozgan matn oʻzgarmaydi. AI faqat maydonlarni toʻldiradi, saqlashni oʻzingiz bosasiz.",
         )}
       </p>
       {note ? <p role="status" className={`text-small ${note.tone === "ok" ? "text-ok" : "text-promo"}`}>{note.text}</p> : null}
